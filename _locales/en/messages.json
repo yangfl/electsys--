@@ -1,0 +1,394 @@
+{
+  "manifest_description": {
+    "message": "As we can"
+  },
+
+
+  "dataTable_language_url": {
+    "message": ""
+  },
+
+
+  "dialog_ok": {
+    "message": "OK"
+  },
+  "dialog_cancel": {
+    "message": "Cancel"
+  },
+
+
+  "bootstrapSwitch_onText": {
+    "message": "ON"
+  },
+  "bootstrapSwitch_offText": {
+    "message": "OFF"
+  },
+
+
+  "menu_right_refresh": {
+    "message": "↻Refresh"
+  },
+  "menu_right_elect": {
+    "message": "Elect"
+  },
+  "menu_right_settings": {
+    "message": "Settings"
+  },
+  "menu_right_logout": {
+    "message": "Logout"
+  },
+  "menu_popup_main": {
+    "message": "Main page"
+  },
+
+
+  "config_title": {
+    "message": "Long long ago..."
+  },
+
+  "config_disclaimer": {
+    "message": ""
+  },
+  "config_agreement": {
+    "message": ""
+  },
+
+  "config_navbar_header": {
+    "message": "this"
+  },
+  "config_navbar_tab_general": {
+    "message": "General"
+  },
+  "config_navbar_tab_looks": {
+    "message": "Looks and feel"
+  },
+  "config_navbar_tab_lessons": {
+    "message": "Lessons"
+  },
+  "config_navbar_tab_info": {
+    "message": "Info"
+  },
+  "config_navbar_login": {
+    "message": "Login"
+  },
+  "config_navbar_logged": {
+    "message": "Welcome!"
+  },
+  "config_navbar_tab_about": {
+    "message": "About"
+  },
+  "config_navbar_tab_help": {
+    "message": "Help"
+  },
+  "config_navbar_tab_advanced": {
+    "message": "Advanced settings"
+  },
+  "config_navbar_tab_homepage": {
+    "message": "Project Homepage"
+  },
+  "config_navbar_tab_bug": {
+    "message": "Bug Report"
+  },
+
+  "config_general_title": {
+    "message": "General"
+  },
+  "config_general_show_message": {
+    "message": "Delay before return from message page, in ms (-1 disable)"
+  },
+  "config_general_old_sdtMain": {
+    "message": "Use original student main page"
+  },
+  "config_general_autofill_retry": {
+    "message": "Autofill retry (-1 disable)"
+  },
+  "config_general_exclude_words": {
+    "message": "Words to be excluded (comma separated)"
+  },
+
+  "config_looks_navbar_title": {
+    "message": "Navbar"
+  },
+  "config_looks_navbar_left": {
+    "message": "Left"
+  },
+  "config_looks_navbar_available": {
+    "message": "Available"
+  },
+  "config_looks_navbar_popup": {
+    "message": "Popup"
+  },
+  "config_looks_navbar_default": {
+    "message": "More"
+  },
+  "config_looks_navbar_right": {
+    "message": "Right"
+  },
+  "config_looks_navbar_divider": {
+    "message": "--- Divider ---"
+  },
+  "config_looks_navbar_addEntry": {
+    "message": "Add new entry"
+  },
+  "config_looks_navbar_reloadDefault": {
+    "message": "Reload default"
+  },
+  "config_looks_navbar_addDivider": {
+    "message": "Add a divider"
+  },
+  "config_looks_navbar_save": {
+    "message": "Save"
+  },
+  "config_looks_navbar_edit_title": {
+    "message": "Edit Entry"
+  },
+  "config_looks_navbar_edit_name": {
+    "message": "Name"
+  },
+  "config_looks_navbar_edit_url": {
+    "message": "URL"
+  },
+  "config_looks_navbar_edit_blank": {
+    "message": "Open in new tab"
+  },
+  "config_looks_color_title": {
+    "message": "Table"
+  },
+  "config_looks_color_picker": {
+    "message": "Color picker"
+  },
+  "config_looks_color_head": {
+    "message": "Head"
+  },
+  "config_looks_color_not_full": {
+    "message": "Not full"
+  },
+  "config_looks_color_full": {
+    "message": "Full"
+  },
+  "config_looks_color_confilcted": {
+    "message": "Confilcted"
+  },
+  "config_looks_color_choosen": {
+    "message": "Choosen"
+  },
+  "config_looks_color_hover": {
+    "message": "Hover"
+  },
+  "config_looks_color_unavailable": {
+    "message": "Unavailable"
+  },
+
+  "config_advanced_warning": {
+    "message": "WARNING: Do not change these until you know exactly what you are doing."
+  },
+  "config_advanced_step": {
+    "message": "Step"
+  },
+  "config_advanced_step_base": {
+    "message": "base"
+  },
+  "config_advanced_step_penalty": {
+    "message": "penalty"
+  },
+  "config_advanced_random": {
+    "message": "Random"
+  },
+  "config_advanced_random_a": {
+    "message": "a"
+  },
+  "config_advanced_random_b": {
+    "message": "b"
+  },
+  "config_advanced_random_n": {
+    "message": "n"
+  },
+  "config_advanced_random_k1": {
+    "message": "k1"
+  },
+  "config_advanced_random_k2": {
+    "message": "k2"
+  },
+  "config_advanced_random_k3": {
+    "message": "k3"
+  },
+
+  "config_advanced_experimental": {
+    "message": "Experimental Features"
+  },
+  "config_advanced_check_on_hover": {
+    "message": "aaa"
+  },
+  "config_advanced_eager_check": {
+    "message": "bbb"
+  },
+  "config_advanced_eager_refresh": {
+    "message": "ccc"
+  },
+
+  "config_lesson_yxmc": {
+    "message": "yxmc"
+  },
+  "config_lesson_xm": {
+    "message": "xm"
+  },
+  "config_lesson_zcmc": {
+    "message": "zcmc"
+  },
+  "config_lesson_kcmc": {
+    "message": "kcmc"
+  },
+  "config_lesson_kcbm": {
+    "message": "kcbm"
+  },
+  "config_lesson_xqxs": {
+    "message": "xqxs"
+  },
+  "config_lesson_xqxf": {
+    "message": "xqxf"
+  },
+  "config_lesson_sjms": {
+    "message": "sjms"
+  },
+  "config_lesson_bz": {
+    "message": "bz"
+  },
+  "config_lesson_nj": {
+    "message": "nj"
+  },
+  "config_lesson_xn": {
+    "message": "xn"
+  },
+  "config_lesson_xq": {
+    "message": "xq"
+  },
+  "config_lesson_yqdrs": {
+    "message": "yqdrs"
+  },
+  "config_lesson_jsdm": {
+    "message": "jsdm"
+  },
+  "config_lesson_jxlmc": {
+    "message": "jxlmc"
+  },
+
+  "config_info_name": {
+    "message": "Name"
+  },
+  "config_info_major": {
+    "message": "Major"
+  },
+  "config_info_year": {
+    "message": "Year"
+  },
+  "config_info_semester": {
+    "message": "Semester"
+  },
+
+  "config_info_load_arranges": {
+    "message": "Load arranges"
+  },
+  "config_info_clear_session": {
+    "message": "Clear session info"
+  },
+  "config_info_clear_cache": {
+    "message": "Clear cache"
+  },
+  "config_info_reset": {
+    "message": "Clear settings"
+  },
+  "config_info_dump_settings": {
+    "message": "Dump settings"
+  },
+  "config_info_check_cachesize": {
+    "message": "Check cache size"
+  },
+
+  "config_info_action_delayed": {
+    "message": "Will be processed on next run"
+  },
+  "config_info_action_confirm": {
+    "message": "Are you sure?"
+  },
+  "config_info_action_wait": {
+    "message": "Waiting..."
+  },
+  "config_info_action_done": {
+    "message": "Done!"
+  },
+
+  "config_about_title": {
+    "message": "About this project"
+  },
+  "config_about_version": {
+    "message": "Version:"
+  },
+
+  "config_welcome_title": {
+    "message": "Welcome!"
+  },
+  "config_welcome_waiting": {
+    "message": "Please wait..."
+  },
+  "config_welcome_body": {
+    "message": ""
+  },
+  "config_welcome_close": {
+    "message": "Close"
+  },
+
+
+  "pingjiao_title": {
+    "message": "Good or bad?"
+  },
+  "pingjiao_good": {
+    "message": "Good!"
+  },
+  "pingjiao_average": {
+    "message": "Well..."
+  },
+  "pingjiao_poor": {
+    "message": "Bad"
+  },
+  "pingjiao_empty": {
+    "message": "Just leave it blank"
+  },
+
+  "lessontable_0": {
+    "message": "L\\D"
+  },
+  "lessontable_1": {
+    "message": "M"
+  },
+  "lessontable_2": {
+    "message": "T"
+  },
+  "lessontable_3": {
+    "message": "W"
+  },
+  "lessontable_4": {
+    "message": "T"
+  },
+  "lessontable_5": {
+    "message": "F"
+  },
+  "lessontable_6": {
+    "message": "S"
+  },
+  "lessontable_7": {
+    "message": "S"
+  },
+
+  "elect_electMain_error": {
+   "message": "Oops, looks like elect is not opened yet."
+  },
+  "elect_available_as": {
+   "message": "As"
+  },
+  "elect_available_school": {
+    "message": "School"
+  },
+  "elect_available_status": {
+   "message": "Status"
+  }
+}

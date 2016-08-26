@@ -1,0 +1,11 @@
+td.tit {
+  cursor: pointer; }
+
+td.tit:hover {
+  background-color: #fc6; }
+
+td.tit > img {
+  mix-blend-mode: multiply; }
+
+td.tit > img.folded {
+  transform: rotate(270deg); }

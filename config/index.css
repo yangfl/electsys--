@@ -1,0 +1,98 @@
+body {
+  padding-top: 70px;
+  padding-bottom: 70px; }
+
+.row.expand {
+  margin-top: 15px;
+  margin-bottom: 15px; }
+
+#navbar-logout {
+  display: none; }
+
+
+/* config */
+.container input.form-control {
+  display: inline;
+  width: initial; }
+
+input[type=number] {
+  text-align: right; }
+
+#general input.form-control {
+  width: 108px; }
+
+#general #exclude_words {
+  width: auto; }
+
+div > label:first-child {
+  width: 8.33333333%;
+  padding-left: initial; }
+
+
+/* looks */
+.menu-table {
+  display: flex; }
+
+.menu-column {
+  display: flex;
+  flex-direction: column; }
+
+.menu-column > ul {
+  flex: auto; }
+
+.menu-divider {
+  width: auto; }
+
+.list-group {
+  min-height: 42px; }
+
+.list-group-item, .list-group-item.disabled:hover {
+  cursor: move; }
+
+.list-group-item > .list-group {
+  margin-top: 10px;
+  margin-bottom: 5px; }
+
+.submenu-title:hover {
+  color: #0769ad; }
+
+.entry-action {
+  display: none;
+  float: right; }
+
+.entry-label:hover > .entry-action {
+  display: block; }
+
+.glyphicon-pencil {
+  color: #2fc; }
+
+.glyphicon-remove {
+  margin-left: 10px;
+  color: red; }
+
+.entry-action > span, .submenu-title {
+  cursor: pointer; }
+
+
+/* lessons */
+#topbar-lessontable {
+  top: 50px; }
+
+/* bug? */
+div.dataTables_filter > label {
+  display: inline; }
+
+#table-lessons > tbody > tr > td:nth-child(5),
+#table-lessons > tbody > tr > td:nth-child(8),
+#table-lessons > tbody > tr > td:nth-child(9) {
+  font-size: small; }
+
+#table-lessons > tbody > tr > td:nth-child(-n+2) {
+  cursor: auto; }
+
+
+/* about */
+.github-ribbon {
+  float: right;
+  top: -39px;
+  position: relative; }

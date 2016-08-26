@@ -1,0 +1,27 @@
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; }
+
+.navbar {
+  border-top-width: 0;
+  margin-bottom: 0; }
+
+iframe {
+  height: 100%;
+  width: 100%;
+  padding-bottom: 51px;
+  border: none; }
+
+iframe::-webkit-scrollbar {
+  width: 12px; }
+
+iframe::-webkit-scrollbar-track {
+  background-color: #eaeaea;
+  border-left: 1px solid #ccc; }
+
+iframe::-webkit-scrollbar-thumb {
+  background-color: #ccc; }
+
+iframe::-webkit-scrollbar-thumb:hover {
+  background-color: #aaa; }

@@ -1,0 +1,259 @@
+{
+  "manifest_version": 2,
+  "name": "Electsys#",
+  "version": "2333.0",
+  "description": "__MSG_manifest_description__",
+  "homepage_url": "https://github.com/yangfl/electsys--",
+  "icons": {
+    "128": "icon.png"
+  },
+  "options_page": "config/index.html",
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "config/popup.html"
+  },
+  "background": {
+    "scripts": ["config/storage.js", "config/background.js"],
+    "persistent": false
+  },
+  "default_locale": "en",
+
+  "permissions": [
+    "storage",
+    "https://jaccount.sjtu.edu.cn/",
+    "http://electsysq.sjtu.edu.cn/",
+    "http://electsys.sjtu.edu.cn/"
+  ],
+  "web_accessible_resources": ["script/*", "vendor/*"],
+  "content_security_policy": "script-src 'self' 'unsafe-eval' blob: filesystem: chrome-extension-resource: ; object-src 'self'",
+
+  "content_scripts": [
+    {
+      "matches": ["http://202.120.52.55/pe/student/addexpe.aspx"],
+      "js": [
+        "vendor/jquery-2.2.4.min.js",
+        "script/miscellaneous/physics.js"
+      ]
+    },
+
+    {
+      "matches": ["https://jaccount.sjtu.edu.cn/jaccount/login?*"],
+      "js": [
+        "script/jaccount/chars.js",
+        "script/jaccount/decoder.js",
+        "script/jaccount/jaccount.js"
+      ],
+      "run_at": "document_end"
+    },
+
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/*"],
+      "all_frames": true,
+      "js": ["vendor/jquery-2.2.4.min.js"],
+      "run_at": "document_start"
+    },
+
+    {
+      "matches": [
+        "http://electsys.sjtu.edu.cn/edu/",
+        "http://electsys.sjtu.edu.cn/edu/index.aspx"
+      ],
+      "css": ["vendor/pure-0.6.0.min.css"],
+      "js": ["script/panel/index.js"],
+      "run_at": "document_end"
+    },
+
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/student/sdtMain.aspx"],
+      "js": [
+        "script/panel/sdtMain/sdtMain.js",
+        "script/panel/sdtMain.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/student/sdtleft.aspx"],
+      "all_frames": true,
+      "css": ["script/panel/sdtleft.css"],
+      "js": ["script/panel/sdtleft.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "http://electsys.sjtu.edu.cn/edu/newsboard/newsinside.aspx",
+        "http://electsys.sjtu.edu.cn/edu/newsBoard/newsInside.aspx"
+      ],
+      "all_frames": true,
+      "css": ["script/panel/contentFold.css"],
+      "js": [
+        "script/panel/newsinside.js",
+        "script/panel/spanOnMouseMove.js",
+        "script/panel/contentFold.js"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/pingjiao/PingJiaoStuNotice.aspx"],
+      "all_frames": true,
+      "js": ["script/panel/pingjiaostunotice.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/student/elect/electResultOuter.aspx*"],
+      "all_frames": true,
+      "css": ["script/panel/electresultouter.css"]
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/student/elect/viewLessonTbl.aspx*"],
+      "all_frames": true,
+      "js": ["script/panel/spanOnMouseMove.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/student/examArrange/examArrange.aspx*"],
+      "all_frames": true,
+      "js": ["script/panel/examArrange.js"],
+      "run_at": "document_end"
+    },
+
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/student/elect/electwarning.aspx?*"],
+      "all_frames": true,
+      "js": ["script/elect/navigator/electwarning.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/lesson/viewLessonArrangeDetail2.aspx?bsid=*"],
+      "all_frames": true,
+      "js": [
+        "script/elect/controller/bsid.js",
+        "script/elect/navigator/viewLessonArrangeDetail2.js"
+      ]
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/messagePage.aspx?*"],
+      "all_frames": true,
+      "js": [
+        "vendor/jquery.hotkeys.js",
+        "script/elect/navigator/messagePage.js"
+      ],
+      "run_at": "document_end"
+    },
+
+    {
+      "matches": [
+        "http://electsys.sjtu.edu.cn/edu/student/elect/speltyLimitedCourse.aspx*",
+        "http://electsys.sjtu.edu.cn/edu/student/elect/speltyCommonCourse.aspx*"
+      ],
+      "all_frames": true,
+      "css": ["script/panel/tdcolour.css", "script/panel/tdcolour.click.css"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/student/elect/secondRoundFP.aspx*"],
+      "all_frames": true,
+      "css": ["script/panel/tdcolour.css"],
+      "js": ["script/elect/navigator/refresh.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "http://electsys.sjtu.edu.cn/edu/student/elect/*",
+        "http://electsys.sjtu.edu.cn/edu/lesson/viewLessonArrange.aspx*"
+      ],
+      "exclude_matches": ["http://electsys.sjtu.edu.cn/edu/student/elect/electwarning.aspx?*"],
+      "all_frames": true,
+      "css": ["script/elect/view/button.css"],
+      "js": [
+        "vendor/jquery.hotkeys.js",
+        "script/elect/view/button.js"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "http://electsys.sjtu.edu.cn/edu/student/elect/*",
+        "http://electsys.sjtu.edu.cn/edu/lesson/viewLessonArrange.aspx*"
+      ],
+      "exclude_matches": [
+        "http://electsys.sjtu.edu.cn/edu/student/elect/electwarning.aspx?*",
+        "http://electsys.sjtu.edu.cn/edu/student/elect/electResultOuter.aspx*",
+        "http://electsys.sjtu.edu.cn/edu/student/elect/secondRoundFP.aspx*",
+        "http://electsys.sjtu.edu.cn/edu/student/elect/removeLessonFast.aspx*",
+        "http://electsys.sjtu.edu.cn/edu/student/elect/viewLessonTbl.aspx*"
+      ],
+      "all_frames": true,
+      "css": [
+        "vendor/DataTables-1.10.12/css/jquery.dataTables.min.css",
+        "vendor/jquery-modal-0.7.0/jquery.modal.min.css",
+        "script/common/table.css",
+        "script/elect/controller/lessontable.css",
+        "script/elect/view/main.css"
+      ],
+      "js": [
+        "vendor/DataTables-1.10.12/js/jquery.dataTables.min.js",
+        "vendor/jquery.single_double_click.js",
+        "vendor/jquery-modal-0.7.0/jquery.modal.min.js",
+        "vendor/URI-1.18.1.min.js",
+        "script/common/ajax.js",
+        "script/common/table.js",
+        "script/elect/controller/arrange.js",
+        "script/elect/controller/available.js",
+        "script/elect/controller/blacklist.js",
+        "script/elect/controller/bsid.js",
+        "script/elect/controller/choosen.js",
+        "script/elect/controller/commonCourse.js",
+        "script/elect/controller/lessontable.js",
+        "script/elect/controller/operation.js",
+        "script/elect/controller/ref.js",
+        "script/elect/view/main.js"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/student/elect/outSpeltyEP.aspx*"],
+      "all_frames": true,
+      "js": ["script/elect/navigator/outSpeltyEP.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/lesson/viewLessonArrange.aspx*"],
+      "all_frames": true,
+      "js": ["script/elect/navigator/viewLessonArrange.js"],
+      "run_at": "document_end"
+    },
+
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/N10_pingjiao/*_pingjiaoXKLB.aspx"],
+      "all_frames": true,
+      "css": [
+        "vendor/bootstrap-3.3.6/css/bootstrap.min.css",
+        "vendor/bootstrap3-dialog-1.35.1/css/bootstrap-dialog.min.css",
+        "script/panel/tdcolour.css",
+        "script/panel/tdcolour.click.css",
+        "script/pingjiao/pingjiaoXKLB.css"
+      ],
+      "js": [
+        "vendor/bootstrap-3.3.6/js/bootstrap.min.js",
+        "vendor/bootstrap3-dialog-1.35.1/js/bootstrap-dialog.min.js",
+        "script/pingjiao/pingjiaoXKLB.js"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "http://electsys.sjtu.edu.cn/edu/N10_pingjiao/N4_pingjiao.aspx?*",
+        "http://electsys.sjtu.edu.cn/edu/N10_pingjiao/S4_pingjiao.aspx?*"
+      ],
+      "all_frames": true,
+      "js": ["script/pingjiao/pingjiao.pre.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/N10_pingjiao/*_pingjiao.aspx?*"],
+      "all_frames": true,
+      "js": ["script/pingjiao/pingjiao.js"],
+      "run_at": "document_end"
+    }
+  ]
+}

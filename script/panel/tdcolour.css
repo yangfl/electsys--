@@ -1,0 +1,5 @@
+.tdcolour1, .tdcolour2 {
+  height: 25px; }
+
+.tdcolour1:hover, .tdcolour2:hover {
+  background-color: #fc6; }

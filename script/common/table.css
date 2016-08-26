@@ -1,0 +1,24 @@
+.table-available > tbody > tr {
+  cursor: pointer; }
+
+.table-available > tbody > tr:hover, .preview {
+  background-color: var(--color-hover) !important; }
+
+.not-full {
+  background-color: var(--color-not-full) !important; }
+
+.full {
+  background-color: var(--color-full) !important; }
+
+.confilcted {
+  background-color: var(--color-confilcted) !important; }
+
+.choosen {
+  background-color: var(--color-choosen) !important; }
+
+.unavailable {
+  background-color: var(--color-unavailable) !important; }
+
+.full, .confilcted, .unavailable {
+  cursor: not-allowed;
+  color: gray !important; }
