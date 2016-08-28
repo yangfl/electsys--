@@ -1,0 +1,5 @@
+    {
+      "matches": ["http://electsys.sjtu.edu.cn/edu/lesson/viewLessonArrangeDetail2.aspx?bsid=*"],
+      "js": ["boom/speedtest/viewLessonArrangeDetail2.pre.js"],
+      "run_at": "document_start"
+    },
