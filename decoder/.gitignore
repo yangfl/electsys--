@@ -1,4 +1,5 @@
 __pycache__/
+data/
+raw.json
 *.py[cod]
-bottle.py
-tpl/
+*.bak

@@ -56,22 +56,33 @@ def post_elect(page):
             redirect('removeLessonFast.aspx')
     return repr(tuple(request.forms.keys()))
 
-entry = '127.0.0.1\telectsys.sjtu.edu.cn\n'
-err = None
 
-with open('/etc/hosts', 'a') as f:
-    f.write(entry)
+def main():
+    import sys
+    sudo = len(sys.argv) > 1 and sys.argv[1] == '-s'
+    if sudo:
+        entry = '127.0.0.1\telectsys.sjtu.edu.cn\n'
+        with open('/etc/hosts', 'a') as f:
+            f.write(entry)
 
-try:
-    run(port=80, reloader=True, debug=True)
-except Exception as e:
-    err = e
+    err = None
 
-with open('/etc/hosts') as f:
-    content = f.readlines()
-while entry in content:
-    content.remove(entry)
-with open('/etc/hosts', 'w') as f:
-    f.writelines(content)
-if err:
-    raise err
+    try:
+        run(port=80 if sudo else 8080, reloader=True, debug=True)
+    except Exception as e:
+        err = e
+
+    if sudo:
+        with open('/etc/hosts') as f:
+            content = f.readlines()
+        while entry in content:
+            content.remove(entry)
+        with open('/etc/hosts', 'w') as f:
+            f.writelines(content)
+
+    if err:
+        raise err
+
+
+if __name__ == '__main__':
+    main()
