@@ -1,7 +1,7 @@
 'use strict'
-var initSyncStorage =
-  callback => chrome.storage.sync.clear(
-    () => chrome.storage.sync.set(
+function initSyncStorage () {
+  return new Promise(function (resolve, reject) {
+    chrome.storage.sync.clear(() => chrome.storage.sync.set(
       {
         sdtMain_menu: [],
         sdtMain_menu_right: [
@@ -10,7 +10,7 @@ var initSyncStorage =
             'javascript: window.location.reload()']],
           ['url', [
             chrome.i18n.getMessage('menu_right_elect'),
-            chrome.extension.getURL('/script/elect/navigator/electMain.html')]],
+            chrome.extension.getURL('/views/elect/index.html')]],
           ['url', [
             chrome.i18n.getMessage('menu_right_logout'),
             'http://electsys.sjtu.edu.cn/edu/logOut.aspx', true]], ],
@@ -23,7 +23,8 @@ var initSyncStorage =
 
         show_message: 1000,
 
-        autofill_retry: 2,
+        autofill: true,
+        autologin_retry: 2,
 
         exclude_words: ['留学生', '民族班', '保健班'],
 
@@ -37,23 +38,41 @@ var initSyncStorage =
 
         step_base: 1475,
         step_penalty: 1.3,
+        step_retry: 3,
 
         random_a: .7,
         random_b: 1,
         random_n: 10,
         random_k1: 9,
         random_k2: 6,
-        random_k3: 3, },
-      callback))
+        random_k3: 3,
+      }, resolve))
+  })
+}
 
-var initLocalStorage =
-  callback => chrome.storage.local.clear(
-    () => chrome.storage.local.set(
-      {
-        arrange: [],
-        schedule: {},
-        bsid: {},
-        timestamp: [], },
-      callback))
 
-var initStorage = callback => initSyncStorage(() => initLocalStorage(callback))
+function initLocalStorage () {
+  return new Promise(function (resolve, reject) {
+    let l_promise = [
+      new Promise(function (resolve, reject) {
+        chrome.storage.local.clear(resolve)
+      })
+    ]
+    indexedDB.webkitGetDatabaseNames().onsuccess = function (sender, args) {
+      let r = sender.target.result
+      for (let i = 0; i < r.length; i++) {
+        l_promise.push(new Promise(function (resolve, reject) {
+          let request = indexedDB.deleteDatabase(r[i])
+          request.onsuccess = resolve
+          request.onerror = event => reject(event.target.error)
+        }))
+      return resolve(Promise.all(l_promise).then(resolve, reject))
+      }
+    }
+  })
+}
+
+
+function initStorage () {
+  return Promise.all([initSyncStorage(), initLocalStorage()])
+}

@@ -1,19 +1,6 @@
 'use strict'
 const MSG_HIDE_TIMEOUT = 1500
 
-/* info */
-var fillInfo = () => {
-  var info = parseInfo($sdtleft)
-  if (info.name) {
-    for (var key in info) {
-      $('.userinfo-' + key).text(info[key]) }
-    $('#navbar-login').hide()
-    $('#navbar-logout').show() }
-  else {
-    $('#navbar-logout').hide()
-    $('#navbar-login').show() }}
-/* info */
-
 
 /* menu */
 var toggleSubmenu = function () {
@@ -21,7 +8,7 @@ var toggleSubmenu = function () {
 
 
 var editEntry = function () {
-  var $li_entry = $(this).closest('li')
+  var $li_entry = $(this.closest('li'))
   var type = $li_entry.data('type')
   BootstrapDialog.show({
     title: chrome.i18n.getMessage('config_looks_navbar_edit_title'),
@@ -96,71 +83,90 @@ var removeEntry = function () {
   $(this).closest('li').remove() }
 
 
-var buildEntry = (type, info) => {
-  var $li_entry = $('<li class="list-group-item" />')
-  $li_entry.data('type', type)
-  $li_entry.data('info', info)
+function buildEntry (type, info) {
+  let li_entry = document.createElement('li')
+  li_entry.classList.add('list-group-item')
+  $(li_entry).data('type', type).data('info', info)
 
-  var $div_label = $('<div class="entry-label" />')
-  $li_entry.append($div_label)
+  let div_label = document.createElement('div')
+  div_label.classList.add('entry-label')
+  li_entry.appendChild(div_label)
 
-  var $span_name = $('<span />')
-  $div_label.append($span_name)
+  let span_name = document.createElement('span')
+  div_label.appendChild(span_name)
 
-  var $div_action = $('<div class="entry-action" />')
-  $div_action.append(
-    $('<span class="entry-edit glyphicon glyphicon-pencil" />')
-      .click(editEntry))
-  $div_action.append(
-    $('<span class="entry-remove glyphicon glyphicon-remove" />')
-      .click(removeEntry))
-  $div_label.append($div_action)
+  let div_action = document.createElement('div')
+  div_action.classList.add('entry-action')
+  let span_edit = document.createElement('span')
+  span_edit.classList.add('entry-edit', 'glyphicon', 'glyphicon-pencil')
+  span_edit.addEventListener('click', editEntry)
+  div_action.appendChild(span_edit)
+  let span_remove = document.createElement('span')
+  span_remove.classList.add('entry-remove', 'glyphicon', 'glyphicon-remove')
+  span_remove.addEventListener('click', removeEntry)
+  div_action.appendChild(span_remove)
+  div_label.appendChild(div_action)
 
   switch (type) {
     case 'url':
       var [name, url, blank_p] = info
-      $span_name.text(name)
+      span_name.innerText = name
       break
 
     case 'group':
       var [name, l_entry] = info
-      $li_entry.data('info', [name])
-      $span_name.text(name)
-      $span_name.addClass('submenu-title')
-      $span_name.click(toggleSubmenu)
-      $span_name.after('<span class="caret"></span>')
-      $li_entry.append(buildMenu(l_entry).hide())
+      $(li_entry).data('info', [name])
+      span_name.innerText = name
+      span_name.classList.add('submenu-title')
+      span_name.addEventListener('click', toggleSubmenu)
+      let span_caret = document.createElement('span')
+      span_caret.classList.add('caret')
+      div_label.insertBefore(span_caret, span_name.nextSibling)
+      li_entry.appendChild(buildMenu(l_entry).hide()[0])
       break
 
     case 'divider':
-      $span_name.text(chrome.i18n.getMessage('config_looks_navbar_divider'))
-      $li_entry.find('.entry-edit').remove()
-      $li_entry.data('info', [])
-      $li_entry.addClass('disabled') }
+      span_name.innerText =
+        chrome.i18n.getMessage('config_looks_navbar_divider')
+      span_edit.remove()
+      $(li_entry).data('info', [])
+      li_entry.classList.add('disabled')
+  }
 
-  return $li_entry }
-
-
-var initSortable = $ul => Sortable.create($ul[0], {
-  group: 'list',
-  animation: 100, })
+  return li_entry
+}
 
 
-var buildMenu = l_entry => {
-  var $container = $('<ul class="list-group" />')
+function initSortable (ul) {
+  Sortable.create(ul, {
+    group: 'list',
+    animation: 100,
+  })
+}
+
+
+function buildMenu (l_entry) {
+  let container = document.createElement('ul')
+  container.classList.add('list-group')
   if (l_entry) {
     l_entry.forEach(([type, info]) =>
-      $container.append(buildEntry(type, info))) }
-  initSortable($container)
-  return $container }
+      container.appendChild(buildEntry(type, info)))
+  }
+  initSortable(container)
+  return $(container)
+}
 
 
-var addDefaultMenu = () => {
-  $('#list-available .list-default').remove()
-  $('#list-available').append(
-    buildEntry('group', [
-      chrome.i18n.getMessage('config_looks_navbar_default'), sdtleft_menu])
-        .addClass('list-default')) }
+function addDefaultMenu () {
+  let old_entry = document.querySelector('#list-available .list-default')
+  if (old_entry) {
+    old_entry.remove()
+  }
+  let new_entry = buildEntry('group', [
+    chrome.i18n.getMessage('config_looks_navbar_default'), sdtleft.menu])
+  new_entry.classList.add('list-default')
+  document.getElementById('list-available').appendChild(new_entry)
+}
 
 
 var getMenu = $container =>
@@ -176,161 +182,89 @@ var getMenu = $container =>
     return [[type, info]] }).toArray()
 
 
-loadSdtleft(() => {
-  loadSdtleftMenu()
+sdtleft.load().then(() => {
   $(document).ready(() => {
-    fillInfo()
+    // fillInfo
+    if (sdtleft.isVaild()) {
+      for (let key in sdtleft.info) {
+        $('.userinfo-' + key).text(sdtleft.info[key])
+      }
+      $('#navbar-login').hide()
+      $('#navbar-logout').show()
+    }
+    else {
+      $('#navbar-logout').hide()
+      $('#navbar-login').show()
+    }
+    // menu
     $('#reload-default').prop('disabled', false)
     addDefaultMenu()
+    // first run
     if (window.location.hash == '#welcome') {
-      chrome.storage.sync.get('sdtMain_menu', item => {
+      initStorage().then(() => chrome.storage.sync.get('sdtMain_menu', item => {
         if (!item.sdtMain_menu || !item.sdtMain_menu.length) {
           item.sdtMain_menu = getMenu($('#list-available'))
           chrome.storage.sync.set(item) }
         $('#welcome .modal-body').html(
-          chrome.i18n.getMessage('config_welcome_body')) }) }}) })
+          chrome.i18n.getMessage('config_welcome_body')) })) }}) })
 /* menu */
 
 
 /* tab */
-var showTab = tab => {
-  if (!$(tab).length) {
-    tab = $('li.active > a').attr('href') }
-  $('.navbar-tabs > li.active').removeClass('active')
-  $('.navbar-tabs > li > a[href="' + tab + '"]').parent().addClass('active')
-  $('.tab-content').not(tab).hide()
-  $(tab).fadeIn()
-  if (window.scrollX || window.scrollY) {
-    window.scrollTo(0, 0) }}
+function showTab (withFallback) {
+  let section_target_tab = document.getElementById(
+    window.location.hash.substr(1))
+  if (!section_target_tab) {
+    if (withFallback === true) {
+      section_target_tab = document.getElementById('general')
+    } else {
+      return
+    }
+  }
+
+  let nav = document.getElementsByTagName('nav')[0]
+  let li_active = nav.getElementsByClassName('active')[0]
+  if (li_active) {
+    li_active.classList.remove('active')
+  }
+  let a_tab = nav.querySelector(
+    '.navbar-tabs > li > a[href="#' + section_target_tab.id + '"]')
+  if (a_tab) {
+    a_tab.parentElement.classList.add('active')
+  }
+
+  let section_prev_tab = document.getElementsByClassName('tab-active')[0]
+  if (section_prev_tab) {
+    section_prev_tab.classList.remove('tab-active')
+  }
+  section_target_tab.classList.add('tab-active')
+  window.scrollTo(0, 0)
+}
 
 
-window.onhashchange = () => {
-  var tab = window.location.hash
-  if (tab) {
-    showTab(tab) }}
+window.addEventListener('hashchange', showTab)
 /* tab */
 
 
 /* config */
-var setConfig = (key, value, callback) => {
-  var item = {}
-  item[key] = value
-  chrome.storage.sync.set(item, callback) }
-
-
-var loadConfig = () => chrome.storage.sync.get(item => {
-  // settings
-  $('.config-sync').each(function () {
-    switch (this.type) {
-      case 'checkbox':
-        $(this).bootstrapSwitch('state', item[this.id] || false)
-        break
-      case 'number':
-        this.value = item[this.id] || 0
-        break
-      default:
-        if (this.classList.contains('config-list')) {
-          this.value = item[this.id].join(', ') }
-        else {
-          this.value = item[this.id] || ''  }}})
-  $('.config-color').each(function () {
-    $(this).css('background-color', this.value) })
+config.loaders.push(item => {
   // menu
-  $('#menu-left').children('ul').remove()
-  $('#menu-left').append(buildMenu(item.sdtMain_menu).attr('id', 'list-left'))
-  $('#menu-right').children('ul').remove()
-  $('#menu-right').append(
-    buildMenu(item.sdtMain_menu_right).attr('id', 'list-right'))
-  $('#menu-popup').children('ul').remove()
-  $('#menu-popup').append(
-    buildMenu(item.popup_menu).attr('id', 'list-popup')) })
-
-
-chrome.storage.onChanged.addListener(loadConfig)
+  if (item.sdtMain_menu) {
+    $('#menu-left').children('ul').remove()
+    $('#menu-left').append(buildMenu(item.sdtMain_menu).attr('id', 'list-left'))
+  }
+  if (item.sdtMain_menu_right) {
+    $('#menu-right').children('ul').remove()
+    $('#menu-right').append(
+      buildMenu(item.sdtMain_menu_right).attr('id', 'list-right'))
+  }
+  if (item.popup_menu) {
+    $('#menu-popup').children('ul').remove()
+    $('#menu-popup').append(
+      buildMenu(item.popup_menu).attr('id', 'list-popup'))
+  }
+})
 /* config */
-
-
-/* lessons */
-var s_choosen = new Set
-
-
-var updateLessons = () => {
-  updateLessontable(s_choosen)
-  Array.prototype.forEach.call(
-    $('#table-lessons').DataTable().rows().nodes(),
-    tr => {
-      var fullref = tr.children[FULLREF].innerHTML
-      if (s_choosen.has(fullref)) {
-        tr.classList.add('choosen')
-        tr.classList.remove('confilcted') }
-      else {
-        tr.classList.remove('choosen')
-        for (var other_fullref of s_choosen) {
-          if (isLessonIntersect(fullref, other_fullref)) {
-            tr.classList.add('confilcted')
-            return }}
-        tr.classList.remove('confilcted') }}) }
-
-
-var toggleLesson = function () {
-  var row = this.parentElement
-  if (row.classList.contains('confilcted')) {
-    return }
-  var fullref = tr.children[FULLREF].innerHTML
-  if (s_choosen.has(fullref)) {
-    s_choosen.delete(fullref) }
-  else {
-    s_choosen.add(fullref) }
-  updateLessons() }
-
-
-var previewLesson = function () {
-  updateLessontable(s_choosen, this.children[FULLREF].innerHTML) }
-
-
-var loadLessons = ($table = $('#table-lessons')) => {
-  var load_start = Date.now()
-  initTableColor($('#lessons').get(0))
-  initLessontable($('#lessons'))
-  $table.mouseout(() => updateLessontable(s_choosen))
-  loadArranges(() => {
-    $table.dataTable({
-      data: Array.from(d_arrange.values()),
-      language: {url: chrome.i18n.getMessage('dataTable_language_url')},
-      pageLength: 100,
-      drawCallback: function () {
-        Array.prototype.forEach.call(
-          this.get(0).getElementsByTagName('tbody')[0].children,
-          tr => {
-            if (tr.children.length > 1 && !tr.attributes.rendered) {
-              for (var i_td = 2, td; td = tr.children[i_td]; i_td++) {
-                td.onclick = toggleLesson }
-              tr.children[1].innerHTML =
-                renderTeacherCell(tr.children[1].innerHTML)
-              tr.onmouseover = previewLesson
-              tr.attributes.rendered = true }} ) },
-      columns: [
-        {title: chrome.i18n.getMessage('config_lesson_yxmc'), },
-        {title: chrome.i18n.getMessage('config_lesson_xm'), },
-        {title: chrome.i18n.getMessage('config_lesson_zcmc'), },
-        {title: chrome.i18n.getMessage('config_lesson_kcmc'), },
-        {title: chrome.i18n.getMessage('config_lesson_kcbm'), },
-        {title: chrome.i18n.getMessage('config_lesson_xqxs'), },
-        {title: chrome.i18n.getMessage('config_lesson_xqxf'), },
-        {title: chrome.i18n.getMessage('config_lesson_sjms'), },
-        {title: chrome.i18n.getMessage('config_lesson_bz'), },
-        {title: chrome.i18n.getMessage('config_lesson_nj'), },
-        {title: chrome.i18n.getMessage('config_lesson_xn'), },
-        {title: chrome.i18n.getMessage('config_lesson_xq'), },
-        {title: chrome.i18n.getMessage('config_lesson_yqdrs'), },
-        {title: chrome.i18n.getMessage('config_lesson_jsdm'), },
-        {title: chrome.i18n.getMessage('config_lesson_jxlmc'), },
-        {
-          title: chrome.i18n.getMessage('elect_available_status'),
-          defaultContent: '',
-          orderDataType: 'dom-priority', }, ], })
-    console.debug('table rendered in:', Date.now() - load_start, 'ms') }) }
-/* lessons */
 
 
 /* i18n */
@@ -339,23 +273,17 @@ $.fn.bootstrapSwitch.defaults.onText =
 $.fn.bootstrapSwitch.defaults.offText =
   chrome.i18n.getMessage('bootstrapSwitch_offText')
 
-
-var i18nInit = ($root = $('html')) => {
-  $root.find('[data-i18n]').each(function () {
-    $(this).data('i18n').split(', ').map(k_v => {
-      var [attr, i18n_name] = k_v.split(':')
-      this[attr] = chrome.i18n.getMessage('config_' + i18n_name) }) })
-  return $root }
+const I18N_PREFIX = 'config_'
 /* i18n */
 
 
 /* dynamic components */
 $(document).ready(() => {
-  i18nInit()
+  i18n(I18N_PREFIX)
 
 
   /* navbar */
-  showTab(window.location.hash)
+  showTab(true)
 
   $('a').click(function () {
     if ($(this).attr('href') == window.location.hash) {
@@ -364,30 +292,20 @@ $(document).ready(() => {
 
 
   /* config */
-  loadConfig()
+  config.init()
 
-  $('.config-sync[type=checkbox]').on(
-    'switchChange.bootstrapSwitch', function (event, state) {
-      setConfig(this.id, state) })
-
-  $('.config-sync[type=number]').change(function () {
-    setConfig(this.id, Number(this.value)) })
-
-  $('.config-sync.config-list').change(function () {setConfig(
-    this.id, this.value.split(',').map(i => i.trim()).filter(i => i)) })
-
-  $('.config-sync[type=text]:not(.config-list)').change(function () {
-    setConfig(this.id, this.value) })
+  $('input[type=checkbox]').bootstrapSwitch()
   /* config */
 
 
   /* looks and feel */
-  initSortable($('#list-available'))
+  initSortable(document.getElementById('list-available'))
 
-  $('#add-entry').click(() => {
-    var $new_entry = buildEntry('url', ['New entry', '#'])
-    $('#list-available').append($new_entry)
-    $new_entry.find('.entry-edit').click() })
+  document.getElementById('add-entry').addEventListener('click', () => {
+    var new_entry = buildEntry('url', ['New entry', '#'])
+    document.getElementById('list-available').appendChild(new_entry)
+    new_entry.getElementsByClassName('entry-edit')[0].click()
+  })
 
   $('#reload-default').click(addDefaultMenu)
 
@@ -415,35 +333,20 @@ $(document).ready(() => {
 
 
   /* info */
-  loadLessons()
-
-  $('#lessons-year').val(quickInfo().year)
-  $('#lessons-semester').val(quickInfo().semester)
-
-  $('#prepare-lessons').click(() => prepareArranges(
-    $('#lessons-year').val(),
-    $('#lessons-semester').val(),
-    '',
-    () => console.info('ok') ))
-
   $('[data-toggle=popover]').each(function () {
     $(this).popover({
-      content: i18nInit(
-        $('<div />').append($($(this).data('raw-content')))).html(),
+      content: $(i18n(I18N_PREFIX,
+        $('<div />').append($($(this).data('raw-content')))[0])).html(),
       html: true, }) })
 
-  $('#btn-clear-session').click(function () {
-      chrome.storage.local.set({clear_localStorage: true})
-      setTimeout(() => $(this).popover('hide'), MSG_HIDE_TIMEOUT) })
-
   $('#btn-clear-cache').click(function () {
-    initLocalStorage(() => {
+    initLocalStorage().then(() => {
       $('#result-clear-cache').text('Done!')
       setTimeout(() => $(this).popover('hide'), MSG_HIDE_TIMEOUT) }) })
 
   $('#btn-reset').on('shown.bs.popover', function () {
     $('#confirm-reset').click(() => {
-      initStorage(() => {
+      initStorage().then(() => {
         $('#confirm-reset').replaceWith('Done!')
         setTimeout(() => $(this).popover('hide'), MSG_HIDE_TIMEOUT) })
       return false }) })
@@ -467,5 +370,7 @@ $(document).ready(() => {
 
   /* welcome */
   if (window.location.hash == '#welcome') {
-    $("#welcome").modal() }
+    $('#welcome').on('hide.bs.modal', function () {
+      window.location.hash = '#general'
+    }).modal() }
   /* welcome */ })

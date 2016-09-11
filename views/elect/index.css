@@ -1,0 +1,145 @@
+/* body */
+body {
+  margin: 8px; }
+
+body.modal-open {
+  padding-right: 0% !important;
+  overflow-y: auto; }
+
+
+/* tabs */
+section:not(#alert):not(#init) {
+  display: none; }
+
+#init > div {
+  display: none; }
+
+#main {
+  margin-top: 15px; }
+
+
+/* botton list */
+.list-right {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1%;
+  margin-bottom: 50px; }
+
+.list-right > .list-right {
+  padding-left: 20%;
+  width: initial;
+  margin-left: initial; }
+
+.list-right > :not(:last-child) {
+  margin-bottom: 3px; }
+
+.btn-type > span {
+  display: none; }
+
+.complex-btn {
+  display: flex; }
+
+.complex-btn > :first-child {
+  flex: 1; }
+
+.complex-btn > :nth-child(2) {
+  margin-left: -1px;
+  padding-left: 4px;
+  padding-right: 4px; }
+
+.divider {
+  margin-bottom: 3px;
+  border-top: 1px solid #ddd;
+  text-align: center;
+  color: #aaa; }
+
+.btn.progress-bar {
+  /* attritubes that progress-bar changes */
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.42857143; }
+
+.progress-bar-active {
+  animation: progress-bar-stripes 2s linear infinite; }
+
+.list-bottom {
+  position: fixed;
+  bottom: 8px;
+  right: 8px; }
+
+.spinning-onhover:hover span {
+  animation: spin 1s infinite linear; }
+
+@keyframes spin {
+  from { transform: scale(1) rotate(0deg); }
+  to { transform: scale(1) rotate(360deg); } }
+
+
+/* popup */
+#select-limited tbody > tr {
+  cursor: pointer; }
+
+.table-striped > tbody > tr.row-selected {
+  background-color: #5bc0de; }
+
+#select-out .option-select > :nth-child(2) > select {
+  padding: 6px; }
+
+.modal .divider {
+  margin: 5px -5px; }
+
+.glyphicon-remove {
+  color: red; }
+
+.modal .glyphicon {
+  /* place bootstrap glyphicon in the middle */
+  top: inherit;
+  line-height: inherit; }
+
+.entry-remove {
+  cursor: pointer; }
+
+.modal label {
+  font-weight: normal; }
+
+
+/* table */
+#block-available {
+  overflow: hidden; }
+
+.dataTables_filter > * {
+  margin-left: 6px; }
+
+th {
+  /* dataTables sort */
+  padding-right: 8px !important; }
+
+.th-name {
+  min-width: 5em; }
+
+.th-ref, .th-credit, .th-hour {
+  width: 10ex; }
+
+.th-type {
+  width: 20ex; }
+
+th, td {
+  text-align: center; }
+
+td > a.glyphicon {
+  margin: 0 6px;
+  font-size: 10px; }
+
+#select-arrange > .modal-dialog {
+  width: 45%; }
+
+#table-arrange .th-note {
+  width: 20%; }
+
+#table-arrange td:first-child {
+  cursor: auto; }
+
+#table-arrange td:nth-child(5) {
+  font-size: x-small;
+  white-space: nowrap; }
+

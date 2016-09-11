@@ -1,7 +1,6 @@
 'use strict'
 chrome.runtime.onInstalled.addListener(details => {
   if (details.reason == 'install') {
-    storageInit()
     window.open('/config/index.html#welcome') }
   else {
     // details.reason == 'update'

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="/vendor/jquery-3.1.0.min.js"></script>
+    <script src="/vendor/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script src="/vendor/DataTables-1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="/vendor/DataTables-1.10.12/js/dataTables.bootstrap.min.js"></script>
+    <script src="/vendor/URI-1.18.1.min.js"></script>
+    <script src="/vendor/queue.js"></script>
+    <script src="/vendor/sleep.js"></script>
+    <script src="/controllers/elect/init/logger.js"></script>
+
+    <meta charset="UTF-8" />
+
+    <link href="/vendor/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/vendor/bootstrap3-dialog-1.35.3/css/bootstrap-dialog.min.css" rel="stylesheet" />
+    <link href="/vendor/DataTables-1.10.12/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+    <link href="/controllers/elect/ui/available-table.css" rel="stylesheet" />
+    <link href="/controllers/elect/ui/schedule-table.css" rel="stylesheet" />
+    <link href="/views/elect/index.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <section id="alert"></section>
+
+    <section id="init">
+      <div id="init-elect">
+        <div id="confirm-elect" class="modal fade bootstrap-dialog type-primary size-normal" role="dialog">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <div class="bootstrap-dialog-header">
+                  <div class="bootstrap-dialog-close-button">
+                    <button class="close" data-dismiss="modal">×</button>
+                  </div>
+                  <div class="bootstrap-dialog-title">Loading...</div>
+                </div>
+              </div>
+              <div class="modal-body">
+                <div class="bootstrap-dialog-body">
+                  <div class="bootstrap-dialog-message">Close this dialog to stop loading (...1s)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="closed-elect" class="modal fade bootstrap-dialog type-primary size-normal" role="dialog">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <div class="bootstrap-dialog-header">
+                  <div class="bootstrap-dialog-title">Information</div>
+                </div>
+              </div>
+              <div class="modal-body">
+                <div class="bootstrap-dialog-body">
+                  <div class="bootstrap-dialog-message">Elect is closed now.</div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <div class="bootstrap-dialog-footer">
+                  <div class="bootstrap-dialog-footer-buttons">
+                    <button class="btn btn-default" data-dismiss="modal">OK</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="init-debug">
+        <button id="confirm-debug" class="btn btn-default">Start debug</button>
+      </div>
+
+      <div id="init-list"></div>
+    </section>
+
+    <section id="main">
+      <div id="topbar-schedule">
+        <div id="container-schedule">
+        </div>
+        <div id="handler-schedule"></div>
+      </div>
+
+      <div id="list-type" class="pull-right list-right">
+        <button id="btn-required" type="button" class="btn btn-type"
+            data-major-type="speltyRequiredCourse">required</button>
+        <div class="complex-btn">
+          <button id="btn-limited" type="button" class="btn btn-type"
+              data-major-type="speltyLimitedCourse">limited</button>
+          <button id="btn-limited-options" type="button" title="More..."
+              class="btn btn-link glyphicon glyphicon-list-alt"></button>
+          <div id="select-limited" class="modal fade bootstrap-dialog type-primary size-normal" role="dialog">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <div class="bootstrap-dialog-header">
+                    <div class="bootstrap-dialog-close-button">
+                      <button class="close" data-dismiss="modal">×</button>
+                    </div>
+                    <div class="bootstrap-dialog-title">Limited</div>
+                  </div>
+                </div>
+                <div class="modal-body">
+                  <div class="bootstrap-dialog-body">
+                    <div class="bootstrap-dialog-message">
+                      <table id="table-limited" class="table table-striped table-bordered">
+                        <thead>
+                          <tr>
+                            <th class="th-name">名称</th>
+                            <th class="th-note">说明</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <div class="bootstrap-dialog-footer">
+                    <div class="bootstrap-dialog-footer-buttons">
+                      <button class="btn btn-default" data-dismiss="modal">OK</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="divider">common</div>
+        <div class="pull-right list-right">
+          <button id="btn-common-hm" type="button" class="btn btn-type"
+              data-major-type="speltyCommonCourse" data-minor-type="gridGModule$ctl02$radioButton">人文</button>
+          <button id="btn-common-ss" type="button" class="btn btn-type"
+              data-major-type="speltyCommonCourse" data-minor-type="gridGModule$ctl03$radioButton">社科</button>
+          <button id="btn-common-ns" type="button" class="btn btn-type"
+              data-major-type="speltyCommonCourse" data-minor-type="gridGModule$ctl04$radioButton">自科</button>
+          <button id="btn-common-ma" type="button" class="btn btn-type"
+              data-major-type="speltyCommonCourse" data-minor-type="gridGModule$ctl05$radioButton">数学</button>
+        </div>
+        <div class="complex-btn">
+          <button id="btn-out" type="button" class="btn btn-type"
+              data-major-type="outSpeltyEP">out</button>
+          <button id="btn-out-options" type="button" title="More..."
+              class="btn btn-link glyphicon glyphicon-list-alt" data-target="#select-out"></button>
+          <div id="select-out" class="modal fade bootstrap-dialog type-primary size-normal" role="dialog">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <div class="bootstrap-dialog-header">
+                    <div class="bootstrap-dialog-close-button">
+                      <button class="close" data-dismiss="modal">×</button>
+                    </div>
+                    <div class="bootstrap-dialog-title">Out</div>
+                  </div>
+                </div>
+                <div class="modal-body">
+                  <div class="bootstrap-dialog-body">
+                    <div class="bootstrap-dialog-message">
+                      <div class="row option-select">
+                        <div class="col-sm-7">
+                        </div>
+                        <div class="col-sm-2">
+                        </div>
+                        <div class="col-sm-3 btn-group">
+                          <button id="btn-select-out-add" type="button" title="Add"
+                              class="btn btn-info glyphicon glyphicon-plus"></button>
+                          <button id="btn-select-out-add-all" type="button" title="Add all"
+                              class="btn btn-info glyphicon glyphicon-plus-sign"></button>
+                          <button id="btn-select-out-remove-all" type="button" title="Remove all"
+                              class="btn btn-warning glyphicon glyphicon-minus-sign"></button>
+                        </div>
+                      </div>
+                      <div class="divider"></div>
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <ul id="list-out-selected" class="list-group">
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <div class="bootstrap-dialog-footer">
+                    <div class="bootstrap-dialog-footer-buttons">
+                      <button class="btn btn-default" data-dismiss="modal">OK</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button id="btn-freshman" type="button" class="btn btn-type"
+            data-major-type="freshmanLesson">freshman</button>
+        <a id="btn-result" type="button" class="btn btn-success" target="_blank"
+          href="http://electsys.sjtu.edu.cn/edu/student/elect/electResultOuter.aspx"
+          title="Please manually check your result!">view result</a>
+      </div>
+
+      <div id="block-available">
+        <table id="table-available" class="table table-striped table-bordered table-entry">
+          <thead>
+            <tr>
+              <th class="th-name">名称</th>
+              <th class="th-ref">代码</th>
+              <th class="th-type">性质</th>
+              <th class="th-credit">学分</th>
+              <th class="th-hour">学时</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+
+      <div id="select-arrange" class="modal fade bootstrap-dialog type-primary size-normal" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-body">
+              <div class="bootstrap-dialog-body">
+                <table id="table-arrange" class="table table-striped table-bordered table-entry">
+                  <thead>
+                    <tr>
+                      <th class="th-teacher">教师</th>
+                      <th class="th-fullref">课号</th>
+                      <th class="th-hour">学时</th>
+                      <th class="th-quota">人数</th>
+                      <th class="th-arrange">安排</th>
+                      <th class="th-note">备注</th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-bottom">
+        <button id="btn-config" type="button" class="btn btn-default spinning-onhover" title="Settings"
+            data-toggle="modal" data-target="#modal-config">
+          <span class="glyphicon glyphicon-cog"></span>
+        </button>
+        <button id="btn-help" type="button" class="btn btn-default" title="Help">
+          <span class="glyphicon glyphicon-question-sign"></span>
+        </button>
+      </div>
+
+      <div id="modal-config" class="modal fade bootstrap-dialog type-primary size-normal" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div class="bootstrap-dialog-header">
+                <div class="bootstrap-dialog-close-button">
+                  <button class="close" data-dismiss="modal">×</button>
+                </div>
+                <div class="bootstrap-dialog-title">Settings</div>
+              </div>
+            </div>
+            <div class="modal-body">
+              <div class="bootstrap-dialog-body">
+                <h3 data-i18n="config_step"></h3>
+                <div class="row">
+                  <div class="col-sm-2">
+                    <label class="text-center" for="step_base" data-i18n="config_step_base"></label>
+                  </div>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control config-sync" id="step_base" min="0" step="1" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-2">
+                    <label class="text-center" for="step_penalty" data-i18n="config_step_penalty"></label>
+                  </div>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control config-sync" id="step_penalty" min="0" step="0.1" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-2">
+                    <label class="text-center" for="step_retry" data-i18n="config_step_retry"></label>
+                  </div>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control config-sync" id="step_retry" min="0" step="1" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-4">
+                    <label for="exclude_words" data-i18n="config_exclude_words"></label>
+                  </div>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control config-sync config-list" id="exclude_words" />
+                  </div>
+                </div>
+                <div class="row">
+                  <a type="button" class="btn btn-default pull-right" href="/config/index.html" target="_blank">Other settings</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="script">
+      <script src="/controllers/config.js"></script>
+      <script src="/controllers/i18n.js"></script>
+      <script src="/controllers/info.js"></script>
+      <script src="/controllers/elect/ajax/refetch.js"></script>
+      <script src="/controllers/elect/ajax/url.js"></script>
+      <script src="/controllers/elect/data/blacklist.js"></script>
+      <script src="/controllers/elect/data/common-course.js"></script>
+      <script src="/controllers/elect/debug/setup.js"></script>
+      <script src="/controllers/elect/init/deferred.js"></script>
+      <script src="/controllers/elect/init/elect-stage.js"></script>
+      <script src="/controllers/elect/init/login.js"></script>
+      <script src="/controllers/elect/init/queue.js"></script>
+      <script src="/controllers/elect/init/storage.js"></script>
+      <script src="/controllers/elect/lesson/fetch.js"></script>
+      <script src="/controllers/elect/lesson/lesson.js"></script>
+      <script src="/controllers/elect/lesson/parser.js"></script>
+      <script src="/controllers/elect/lesson/tab.js"></script>
+      <script src="/controllers/elect/ui/available-table.js"></script>
+      <script src="/controllers/elect/ui/dataTables.js"></script>
+      <script src="/controllers/elect/ui/schedule-table.js"></script>
+      <script src="/controllers/elect/ui/shortcut.js"></script>
+      <script src="/controllers/elect/ui/ui-tab.js"></script>
+      <script src="/views/elect/index.js"></script>
+    </section>
+  </body>
+</html>

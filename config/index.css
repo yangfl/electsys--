@@ -10,6 +10,19 @@ body {
   display: none; }
 
 
+/* tab */
+.tab-active {
+  display: block;
+  animation: fadein .4s; }
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; } }
+
+section {
+  display: none; }
+
+
 /* config */
 .container input.form-control {
   display: inline;
@@ -72,23 +85,6 @@ div > label:first-child {
 
 .entry-action > span, .submenu-title {
   cursor: pointer; }
-
-
-/* lessons */
-#topbar-lessontable {
-  top: 50px; }
-
-/* bug? */
-div.dataTables_filter > label {
-  display: inline; }
-
-#table-lessons > tbody > tr > td:nth-child(5),
-#table-lessons > tbody > tr > td:nth-child(8),
-#table-lessons > tbody > tr > td:nth-child(9) {
-  font-size: small; }
-
-#table-lessons > tbody > tr > td:nth-child(-n+2) {
-  cursor: auto; }
 
 
 /* about */

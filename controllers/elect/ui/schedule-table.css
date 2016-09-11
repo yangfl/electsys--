@@ -1,0 +1,57 @@
+#topbar-schedule {
+  --radius: 3px;
+  opacity: .6;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 900;
+  width: 60%;
+  transition: 1s; }
+
+#topbar-schedule:hover {
+  opacity: .8; }
+
+#container-schedule {
+  display: none; }
+
+#table-schedule {
+  width: 100%;
+  margin-bottom: -1px; }
+
+#table-schedule th {
+  color: #4e6a00;
+  font-weight: normal; }
+
+#table-schedule th, #table-schedule td {
+  border: 1px solid #ccc;
+  text-align: center; }
+
+#handler-schedule {
+  float: left;
+  min-width: 15%;
+  background-color: #e9f4ca;
+  border: 1px solid #ccc;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s,
+      padding-top .4s, padding-bottom .4s;
+  text-align: center;
+  cursor: pointer; }
+
+#handler-schedule:hover {
+  border-color: #66afe9;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6); }
+
+#handler-schedule:not(.expand):hover {
+  padding-top: 5px; }
+
+#handler-schedule::after {
+  content: "\25bc"; }
+
+#handler-schedule.expand {
+  padding-top: 3px;
+  padding-bottom: 2px; }
+
+#handler-schedule.expand::after {
+  content: "\25b2"; }

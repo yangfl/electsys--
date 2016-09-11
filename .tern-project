@@ -1,0 +1,12 @@
+{
+  "ecmaVersion": 7,
+  "libs": [
+    "browser",
+    "jquery"
+  ],
+  "loadEagerly": [
+    "controllers/*.js",
+    "controllers/elect/*/*.js"
+  ],
+  "plugins": {}
+}

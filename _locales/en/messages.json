@@ -31,7 +31,7 @@
   "menu_right_elect": {
     "message": "Elect"
   },
-  "menu_right_settings": {
+  "menu_right_config": {
     "message": "Settings"
   },
   "menu_right_logout": {
@@ -43,7 +43,7 @@
 
 
   "config_title": {
-    "message": "Long long ago..."
+    "message": "Electsys# Preferences"
   },
 
   "config_disclaimer": {
@@ -54,7 +54,7 @@
   },
 
   "config_navbar_header": {
-    "message": "this"
+    "message": "Electsys#"
   },
   "config_navbar_tab_general": {
     "message": "General"
@@ -99,11 +99,11 @@
   "config_general_old_sdtMain": {
     "message": "Use original student main page"
   },
-  "config_general_autofill_retry": {
-    "message": "Autofill retry (-1 disable)"
+  "config_general_autofill": {
+    "message": "Auto fill"
   },
-  "config_general_exclude_words": {
-    "message": "Words to be excluded (comma separated)"
+  "config_general_autologin_retry": {
+    "message": "Auto login retry"
   },
 
   "config_looks_navbar_title": {
@@ -182,15 +182,6 @@
   "config_advanced_warning": {
     "message": "WARNING: Do not change these until you know exactly what you are doing."
   },
-  "config_advanced_step": {
-    "message": "Step"
-  },
-  "config_advanced_step_base": {
-    "message": "base"
-  },
-  "config_advanced_step_penalty": {
-    "message": "penalty"
-  },
   "config_advanced_random": {
     "message": "Random"
   },
@@ -211,19 +202,6 @@
   },
   "config_advanced_random_k3": {
     "message": "k3"
-  },
-
-  "config_advanced_experimental": {
-    "message": "Experimental Features"
-  },
-  "config_advanced_check_on_hover": {
-    "message": "aaa"
-  },
-  "config_advanced_eager_check": {
-    "message": "bbb"
-  },
-  "config_advanced_eager_refresh": {
-    "message": "ccc"
   },
 
   "config_lesson_yxmc": {
@@ -331,7 +309,7 @@
     "message": "Please wait..."
   },
   "config_welcome_body": {
-    "message": ""
+    "message": "Config initialization finished"
   },
   "config_welcome_close": {
     "message": "Close"
@@ -341,43 +319,48 @@
   "pingjiao_title": {
     "message": "Good or bad?"
   },
+  "pingjiao_direct": {
+    "message": "Just get rid of it!"
+  },
   "pingjiao_good": {
-    "message": "Good!"
+    "message": "Good"
   },
   "pingjiao_average": {
     "message": "Well..."
   },
   "pingjiao_poor": {
-    "message": "Bad"
+    "message": "Baaaad"
   },
   "pingjiao_empty": {
-    "message": "Just leave it blank"
+    "message": "Leave it blank"
   },
 
-  "lessontable_0": {
+
+  "scheduletable_0": {
     "message": "L\\D"
   },
-  "lessontable_1": {
+  "scheduletable_1": {
     "message": "M"
   },
-  "lessontable_2": {
+  "scheduletable_2": {
     "message": "T"
   },
-  "lessontable_3": {
+  "scheduletable_3": {
     "message": "W"
   },
-  "lessontable_4": {
+  "scheduletable_4": {
     "message": "T"
   },
-  "lessontable_5": {
+  "scheduletable_5": {
     "message": "F"
   },
-  "lessontable_6": {
+  "scheduletable_6": {
     "message": "S"
   },
-  "lessontable_7": {
+  "scheduletable_7": {
     "message": "S"
   },
+
 
   "elect_electMain_error": {
    "message": "Oops, looks like elect is not opened yet."
@@ -390,5 +373,30 @@
   },
   "elect_available_status": {
    "message": "Status"
+  },
+
+  "elect_config_exclude_words": {
+    "message": "Words to be excluded (comma separated)"
+  },
+
+  "elect_config_step": {
+    "message": "Step"
+  },
+  "elect_config_step_base": {
+    "message": "base"
+  },
+  "elect_config_step_penalty": {
+    "message": "penalty"
+  },
+
+  "elect_config_check_on_hover": {
+    "message": "aaa"
+  },
+  "elect_config_eager_check": {
+    "message": "bbb"
+  },
+  "elect_config_eager_refresh": {
+    "message": "ccc"
   }
+
 }
