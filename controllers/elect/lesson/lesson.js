@@ -29,7 +29,7 @@ Teacher
 
 Integer
   = [0-9]+
-    { return parseInt(text(), 10) }
+    { return Number(text()) }
 
 _
   = $[^\\r\\n]* '\\r'? '\\n'
@@ -56,14 +56,13 @@ const STRUCT_LESSON = [
 
 class Lesson {
   constructor (data = {}) {
-    STRUCT_LESSON.forEach(cell => {
-      let property = cell[0]
+    this.PROPERTIES.forEach(property => {
       this[property] = data[property]
     })
-    this.schedule = data.schedule
   }
 
-  from (data) {
+  static from (data) {
+    let fullref
     switch (typeof data) {
       case 'number':
         let bsid = data
@@ -77,7 +76,7 @@ class Lesson {
                 fetchBsid(bsid).then(fullref => Lesson.from(fullref)))
         })
       case 'string':
-        let fullref = data
+        fullref = data
         // Lesson when found, otherwise undefined
         return new Promise((resolve, reject) => {
           db_lesson.transaction('lesson').objectStore('lesson')
@@ -86,11 +85,17 @@ class Lesson {
              reject(new RangeError(`fullref ${fullref} unknown`))
         })
       case 'object':
-        fullref = this.fullref
+        fullref = data.fullref
         if (!fullref) {
           throw new TypeError('fullref required')
         }
-        return Lesson.from(fullref).catch(() => new Lesson).then(lesson => {
+        return Lesson.from(fullref).catch(e => {
+          if (e instanceof RangeError) {
+            return new Lesson
+          } else {
+            throw e
+          }
+        }).then(lesson => {
           lesson.update(data)
           return lesson
         })
@@ -98,6 +103,15 @@ class Lesson {
         throw new TypeError('1 argument required, but only 0 present.')
       default:
         throw new TypeError('data type invaild')
+    }
+  }
+
+  _parse () {
+    try {
+      this.schedule = this.scheduleParser.parse(this.scheduleDesc)
+    } catch (e) {
+      console.warn(this.scheduleDesc.replace(/\r/g, '\\r'))
+      throw e
     }
   }
 
@@ -112,16 +126,19 @@ class Lesson {
 
     // detect update event
     let isUpdated = false
-    for (var k in data) {
-      if (data[k] !== this[k]) {
+    this.PROPERTIES.forEach(k => {
+      if (this[k] === undefined && data[k]) {
         isUpdated = true
         this[k] = data[k]
+      } else if (data[k] !== undefined && this[k] !== data[k]) {
+        console.warn('property %s:', k, this[k], 'confilcts with', data[k])
       }
-    }
+    })
     // try to parse schedule
-    if (!this.schedule && this.scheduleDesc && this.prototype.parseSchedule) {
+    if (!this.schedule && this.scheduleDesc &&
+        this.constructor.prototype.scheduleParser) {
+      this._parse()
       isUpdated = true
-      this.schedule = this.prototype.scheduleParser.parse(this.scheduleDesc)
     }
 
     if (isUpdated && !noUpdate) {
@@ -182,6 +199,9 @@ class Lesson {
     return fetch(ELECT.remove(bsid))
   }
 }
+
+Lesson.prototype.PROPERTIES = STRUCT_LESSON.map(cell => cell[0])
+Lesson.prototype.PROPERTIES.push('schedule')
 
 
 function fetchBsid (bsid) {

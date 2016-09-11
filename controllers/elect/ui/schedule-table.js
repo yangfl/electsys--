@@ -27,8 +27,9 @@ function getEmptyScheduletable () {
 }
 
 
-document.getElementById('handler-schedule')
-  .addEventListener('click', function onclickHandlerSchedule () {
+{
+  const div_handler_schedule = document.getElementById('handler-schedule')
+  div_handler_schedule.addEventListener('click', function () {
     // since display status will be changed soon
     sessionStorage.showLessontable =
       this.previousElementSibling.offsetParent === null
@@ -36,6 +37,21 @@ document.getElementById('handler-schedule')
       complete: () => this.classList.toggle('expand')
     })
   })
+  document.getElementById('container-schedule')
+    .addEventListener('click', function (event) {
+      if (event.target.classList.contains('classtit') ||
+          event.target.classList.contains('classtit2') ||
+          event.target.nodeName === 'TH') {
+        div_handler_schedule.click()
+      } else if (event.target.nodeName === 'TD') {
+        if (!event.target.classList.contains('multiple')) {
+          event.target.getElementsByTagName('a')[0].click()
+        }
+      } else if (event.target.nodeName === 'A') {
+        console.info(event.target.nodeName)
+      }
+    })
+}
 
 
 var drawLessonEntry = ($tr, fullref, styler = () => {}) => {

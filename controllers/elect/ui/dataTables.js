@@ -65,11 +65,21 @@ let dataTable_arrange
         {
           data: 'max',
           render (data, type, row) {
-            return row.min + ' | ' + row.pending + '/' +
-              row.confirmed + ' | ' + row.max
+            return '<span class="glyphicon glyphicon-chevron-up"></span>' +
+              '<span class="td-min">' + row.min + '</span><br />' +
+              '<span class="td-pending">' + row.pending + '</span>' +
+              '<span class="glyphicon glyphicon-dashed-arrow-right"></span>' +
+              '<span class="td-confirmed">' + row.confirmed + '</span><br />' +
+              '<span class="glyphicon glyphicon-chevron-down"></span>' +
+              '<span class="td-max">' + row.max + '</span>'
           },
         },
-        {data: 'scheduleDesc'},
+        {
+          data: 'scheduleDesc',
+          render (data) {
+            return data.replace(/\r/g, '').replace(/\n/g, '<br />')
+          },
+        },
         {data: 'note'},
       ],
       createdRow (row) {

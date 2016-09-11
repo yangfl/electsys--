@@ -226,6 +226,7 @@ function selectedTab () {
 }
 
 
+const div_schedule = document.getElementById('container-schedule')
 function refreshAvailable (reload) {
   dataTable_available.clear()
   // true | event
@@ -238,7 +239,13 @@ function refreshAvailable (reload) {
       p = p.then(tab => tab.load(true))
     }
     return p.then(
-      tab => dataTable_available.rows.add(Object.values(tab.entryData)))
+      tab => {
+        dataTable_available.rows.add(Object.values(tab.entryData))
+        while (div_schedule.lastElementChild) {
+          div_schedule.removeChild(div_schedule.lastElementChild)
+        }
+        div_schedule.appendChild(tab.scheduleTable)
+      })
   })).then(() => dataTable_available.draw())
 }
 

@@ -169,8 +169,8 @@ Lesson.prototype.scheduleParser = /*
               lesson_start--
               return teacher.map(([week_start, week_end, classroom, teacher]) =>
                 [week_start, week_end, dow, lesson_start, lesson_end]) },
-        peg$c20 = /^[^.(\\r\\n]/,
-        peg$c21 = peg$classExpectation([".", "(", "\\", "r", "\\", "n"], true, false),
+        peg$c20 = /^[^.(\r\n]/,
+        peg$c21 = peg$classExpectation([".", "(", "\r", "\n"], true, false),
         peg$c22 = ".",
         peg$c23 = peg$literalExpectation(".", false),
         peg$c24 = "(",
@@ -181,18 +181,18 @@ Lesson.prototype.scheduleParser = /*
         peg$c29 = peg$literalExpectation("\u5468)", false),
         peg$c30 = " ",
         peg$c31 = peg$literalExpectation(" ", false),
-        peg$c32 = /^[^\\r\\n]/,
-        peg$c33 = peg$classExpectation(["\\", "r", "\\", "n"], true, false),
+        peg$c32 = /^[^\r\n]/,
+        peg$c33 = peg$classExpectation(["\r", "\n"], true, false),
         peg$c34 = function(classroom, week_start, week_end, teacher) {
               week_start--
               return [week_start, week_end, classroom, teacher] },
         peg$c35 = /^[0-9]/,
         peg$c36 = peg$classExpectation([["0", "9"]], false, false),
-        peg$c37 = function() { return parseInt(text(), 10) },
-        peg$c38 = "\\r",
-        peg$c39 = peg$literalExpectation("\\r", false),
-        peg$c40 = "\\n",
-        peg$c41 = peg$literalExpectation("\\n", false),
+        peg$c37 = function() { return Number(text()) },
+        peg$c38 = "\r",
+        peg$c39 = peg$literalExpectation("\r", false),
+        peg$c40 = "\n",
+        peg$c41 = peg$literalExpectation("\n", false),
 
         peg$currPos          = 0,
         peg$savedPos         = 0,
@@ -800,9 +800,9 @@ Lesson.prototype.scheduleParser = /*
         s1 = s2;
       }
       if (s1 !== peg$FAILED) {
-        if (input.substr(peg$currPos, 2) === peg$c38) {
+        if (input.charCodeAt(peg$currPos) === 13) {
           s2 = peg$c38;
-          peg$currPos += 2;
+          peg$currPos++;
         } else {
           s2 = peg$FAILED;
           if (peg$silentFails === 0) { peg$fail(peg$c39); }
@@ -811,9 +811,9 @@ Lesson.prototype.scheduleParser = /*
           s2 = null;
         }
         if (s2 !== peg$FAILED) {
-          if (input.substr(peg$currPos, 2) === peg$c40) {
+          if (input.charCodeAt(peg$currPos) === 10) {
             s3 = peg$c40;
-            peg$currPos += 2;
+            peg$currPos++;
           } else {
             s3 = peg$FAILED;
             if (peg$silentFails === 0) { peg$fail(peg$c41); }

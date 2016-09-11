@@ -111,6 +111,7 @@ section:not(#alert):not(#init) {
   margin-left: 6px; }
 
 th {
+  white-space: nowrap;
   /* dataTables sort */
   padding-right: 8px !important; }
 
@@ -131,7 +132,7 @@ td > a.glyphicon {
   font-size: 10px; }
 
 #select-arrange > .modal-dialog {
-  width: 45%; }
+  width: 60%; }
 
 #table-arrange .th-note {
   width: 20%; }
@@ -139,7 +140,36 @@ td > a.glyphicon {
 #table-arrange td:first-child {
   cursor: auto; }
 
-#table-arrange td:nth-child(5) {
-  font-size: x-small;
+#table-arrange td:nth-child(4) {
   white-space: nowrap; }
 
+#table-arrange td:nth-child(4) > .glyphicon {
+  color: #337ab7;
+  font-size: x-small; }
+
+#table-arrange td:nth-child(4) > .glyphicon-chevron-up,
+#table-arrange td:nth-child(4) > .glyphicon-chevron-down {
+  margin-left: 2px;
+  float: left; }
+
+#table-arrange td:nth-child(4) > .glyphicon-dashed-arrow-right {
+  font-size: 165%; }
+
+.td-min, .td-max  {
+  float: right; }
+
+.glyphicon-dashed-arrow-right {
+  font-weight: bolder;
+  font-size: 165%;
+  margin-top: -12px;
+  margin-left: 3px;
+  margin-right: 3px; }
+
+.glyphicon-dashed-arrow-right:before {
+  content: "\21E2"; }
+
+#table-arrange td:nth-child(5) {
+  font-family: "??";
+  font-size: x-small;
+  text-align: initial;
+  white-space: nowrap; }

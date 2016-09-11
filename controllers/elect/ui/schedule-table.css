@@ -1,7 +1,7 @@
 #topbar-schedule {
   --radius: 3px;
-  opacity: .6;
-  position: fixed;
+  opacity: .4;
+  position: absolute;
   top: 0;
   left: 0;
   z-index: 900;
@@ -12,21 +12,58 @@
   opacity: .8; }
 
 #container-schedule {
-  display: none; }
+  display: none;
+  -webkit-text-fill-color: transparent; }
 
-#table-schedule {
+#container-schedule:hover {
+  -webkit-text-fill-color: initial; }
+
+#container-schedule > table {
+  border: 1px solid #ccc;
+  font-size: x-small;
+  text-align: center;
   width: 100%;
   margin-bottom: -1px; }
 
-#table-schedule th {
-  color: #4e6a00;
-  font-weight: normal; }
+#container-schedule th, #container-schedule td {
+  /* make background-color transited */
+  transition: 1s; }
 
-#table-schedule th, #table-schedule td {
-  border: 1px solid #ccc;
-  text-align: center; }
+#container-schedule th, .classtit {
+  height: 42px; }
+
+.classtit2 {
+  height: 25px; }
+
+#container-schedule th, .classtit, .classtit2 {
+  color: #4e6a00;
+  cursor: pointer;
+  white-space: nowrap; }
+
+
+#container-schedule:hover th,
+#container-schedule:hover .classtit,
+#container-schedule:hover .classtit2 {
+  background-color: #B8C790; }
+
+#container-schedule:hover .classmain, .occupied {
+  background-color: #ebf2d3; }
+
+#container-schedule a {
+  color: black; }
+
+.occupied:not(.multiple) {
+  cursor: pointer; }
+
+#container-schedule .occupied:not(.multiple):hover a,
+#container-schedule a:hover {
+  /* #container-schedule a: color */
+  color: red;
+  cursor: pointer;
+  text-decoration: underline; }
 
 #handler-schedule {
+  position: fixed;
   float: left;
   min-width: 15%;
   background-color: #e9f4ca;

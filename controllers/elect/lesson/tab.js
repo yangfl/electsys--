@@ -47,22 +47,22 @@ let rootTab
         }
       }
 
-      this.typeDesc = typeDesc // [typeDesc]
-      this.parent = undefined
+      this.typeDesc = typeDesc  // [typeDesc]
+      this.data = undefined  // for ArrangeTab
       this.requestUrl = requestUrl
       this.requestData = requestData
       this.status = 'pending'
       this.node = undefined
 
-      this.formAction = undefined // url
-      this.statusData = undefined // {name: value}
-      this.buttonData = undefined // {value: name}
+      this.formAction = undefined  // url
+      this.statusData = undefined  // {name: value}
+      this.buttonData = undefined  // {value: name}
 
-      this.entryData = undefined // {ref | fullref: {name: value}}
-      this.entryCache = {} // {ref | fullref: Tab}
+      this.entryData = undefined  // {ref | fullref: {name: value}}
+      this.entryCache = {}  // {ref | fullref: Tab}
       this.entryFormName = undefined
-      this.typeData = undefined // {typeDesc: {name: value}}
-      this.typeCache = {} // {typeDesc: Tab}
+      this.typeData = undefined  // {typeDesc: {name: value}}
+      this.typeCache = {}  // {typeDesc: Tab}
     }
 
     consume (func) {
@@ -95,19 +95,21 @@ let rootTab
         return Promise.resolve(this)
       }
       this.status = 'loading'
+      this.typeCache = {}
+      this.entryCache = {}
       return refetch(
         this.requestUrl, this.requestData && postOptions(this.requestData))
-      .then(response => response.text().then(data => {
-        this.status = 'loaded'
-        this._parse(data, response)
-        return this
-      })).catch(e => {
+      .then(response => response.text()
+        .then(data => this._parse(data, response)))
+      .then(() => this).catch(e => {
         this.status = 'failed'
         throw e
       })
     }
 
     _parse (data, response) {
+      this.status = 'loaded'
+
       // this.node
       this.node = document.createElement('div')
       this.node.innerHTML = data.replace('src', 'tempsrc').substring(
@@ -123,13 +125,6 @@ let rootTab
       let first_entry = this.node.querySelector('span > input')
       if (first_entry) {
         this.entryData = tableSerialize.call(this, first_entry.closest('table'))
-        if (this.typeDesc[0] == 'outSpeltyEP') {
-          let select_school = this.node.getElementsByTagName('select')[0]
-          let school = select_school.options[select_school.selectedIndex].text
-          for (let key in this.entryData) {
-            this.entryData[key].school = school
-          }
-        }
         this.entryFormName = first_entry.name
       }
 
@@ -140,7 +135,24 @@ let rootTab
         this.bsids = []
         Array.prototype.forEach.call(
           this.scheduleTable.querySelectorAll('a'), a => {
+            if (a.parentNode.classList.contains('occupied')) {
+              a.parentNode.classList.add('multiple')
+            } else {
+              a.parentNode.classList.add('occupied')
+            }
             let bsid = Number(a.href.split('bsid=')[1])
+            /*
+            let span_name = document.createElement('span')
+            span_name.innerText = a.innerHTML
+            span_name.setAttribute('data-bsid', bsid)
+            a.parentNode.insertBefore(span_name, a)
+            if (a.nextElementSibling) {
+              a.nextElementSibling.remove()
+            }
+            a.remove()
+            */
+            a.setAttribute('data-bsid', bsid)
+            a.removeAttribute('href')
             if (!this.bsids.includes(bsid)) {
               this.bsids.push(bsid)
             }
@@ -191,7 +203,7 @@ let rootTab
               [this.entryFormName]: entryKey,
               [this.buttonData[_button]]: _button,
             }))
-        entryTab.parent = this
+        entryTab.data = entryData
         this.entryCache[entryKey] = entryTab
       }
 
@@ -226,7 +238,6 @@ let rootTab
                                    this.formAction,
           this.formAction && Object.assign(
             {}, this.statusData, this._type_request_data(nextType)))
-        nextTab.parent = this
         this.typeCache[nextType] = nextTab
       }
 
@@ -267,6 +278,15 @@ let rootTab
   }
 
   class OutTab extends Tab {
+    _parse (data, response) {
+      super._parse(data, response)
+      let select_school = this.node.getElementsByTagName('select')[0]
+      let school = select_school.options[select_school.selectedIndex].text
+      for (let key in this.entryData) {
+        this.entryData[key].school = school
+      }
+    }
+
     _type_request_data (nextType) {
       let value = nextType.split('-')
       return {
@@ -289,6 +309,27 @@ let rootTab
   RootTab.prototype._type_request_url = ELECT.tab
 
   class ArrangeTab extends Tab {
+    _parse (data, response) {
+      super._parse(data, response)
+      let q = []
+      for (let bsid in this.entryData) {
+        let lessonInfo = this.entryData[bsid]
+        lessonInfo.name = this.data.name
+        lessonInfo.scheduleDesc = lessonInfo.scheduleDesc.split('<br>')
+          .slice(1).join('\r\n')
+        q.push(Lesson.from(lessonInfo).then(lesson => {
+          let entryData = Object.create(lesson)
+          for (let key in lessonInfo) {
+            if (!(key in lesson)) {
+              entryData[key] = lessonInfo[key]
+            }
+          }
+          this.entryData[bsid] = entryData
+        }))
+      }
+      return Promise.all(q)
+    }
+
     entry (entryData, button = '选定此教师') {
       if (this.entryData === undefined) {
         throw new TypeError('no entry available')
@@ -331,6 +372,7 @@ let rootTab
         let value = td.innerHTML.trim()
         switch (th_text) {
           case '选择':
+            key = td.getElementsByTagName('input')[0].name
             continue
           case '\xA0':
             let input = td.getElementsByTagName('input')[0]
