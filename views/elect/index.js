@@ -72,7 +72,7 @@ function preLogin () {
       } else {
         // timeout
         loggerInit('init.dialog', 'dialog confirmed')
-        loggerInit('init.login', 'open login window')
+        loggerInit('init.login', 'start login')
         let promise_openlogin = openLogin()
         promise_openlogin.then(waitLogin)
           .then(postLogin, loggerError('init.login',
@@ -123,7 +123,8 @@ function preMain () {
 
 
 function main () {
-  if (current_stage && current_stage[0] == 3) {
+  if (current_stage && current_stage[1] == 3) {
+    // short semester
     document.getElementById('list-type').style.display = 'none'
     deferredPool.tasks.datatable.then(() => {
       let btn_result = document.getElementById('btn-result')

@@ -27,6 +27,7 @@ function openLogin () {
 
 async function waitLogin (loginWindow) {
   if (loginWindow === undefined) {
+    window.dispatchEvent(new Event('login'))
     return true
   }
   while (true) {

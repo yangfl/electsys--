@@ -25,14 +25,10 @@ let dataTable_arrange
           },
         },
         {data: 'ref'},
+        {data: 'type'},
         {
-          data: 'major_type',
-          render (data, type, row) {
-            if (row.as) {
-              return row.type + ' (' + row.as + ')'
-            }
-            return row.type
-          },
+          data: 'as',
+          defaultContent: '',
         },
         {data: 'credit'},
         {data: 'hour'},
@@ -45,11 +41,30 @@ let dataTable_arrange
     })
 
     let div_available_header = document.getElementById('table-available_filter')
+    // refresh
     let btn_available_refresh = refreshButton()
     btn_available_refresh.addEventListener(
       'click', refreshAvailable.bind(undefined, true))
     div_available_header.insertBefore(
       btn_available_refresh, div_available_header.firstElementChild)
+    // upload
+    let div_temp = document.createElement('div')
+    div_temp.innerHTML = `
+<button type="button" class="btn btn-default btn-submit" title="Upload">
+  <span class="glyphicon glyphicon-open"></span>
+</button>`
+    let btn_available_submit = div_temp.firstElementChild
+    btn_available_submit.addEventListener(
+      'click', () => rootTab.submit().then(
+        () => {
+          // success
+        },
+        () => {
+          // failed
+        }
+      ))
+    div_available_header.insertBefore(
+      btn_available_submit, div_available_header.firstElementChild)
 
     dataTable_arrange = $('#table-arrange').DataTable({
       autoWidth: false,
@@ -65,13 +80,13 @@ let dataTable_arrange
         {
           data: 'max',
           render (data, type, row) {
-            return '<span class="glyphicon glyphicon-chevron-up"></span>' +
-              '<span class="td-min">' + row.min + '</span><br />' +
-              '<span class="td-pending">' + row.pending + '</span>' +
-              '<span class="glyphicon glyphicon-dashed-arrow-right"></span>' +
-              '<span class="td-confirmed">' + row.confirmed + '</span><br />' +
-              '<span class="glyphicon glyphicon-chevron-down"></span>' +
-              '<span class="td-max">' + row.max + '</span>'
+            return '<span class="td-max" title="Max">' + row.max + '</span>' +
+              '<span class="glyphicon glyphicon-chevron-up"></span><br />' +
+              '<span class="td-confirmed" title="Confirmed">' + row.confirmed + '</span>' +
+              '<span class="glyphicon glyphicon-dashed-arrow-left"></span>' +
+              '<span class="td-pending" title="Pending">' + row.pending + '</span><br />' +
+              '<span class="td-min" title="Min">' + row.min + '</span>' +
+              '<span class="glyphicon glyphicon-chevron-down"></span>'
           },
         },
         {
@@ -80,7 +95,10 @@ let dataTable_arrange
             return data.replace(/\r/g, '').replace(/\n/g, '<br />')
           },
         },
-        {data: 'note'},
+        {
+          data: 'note',
+          defaultContent: '',
+        },
       ],
       createdRow (row) {
         row.addEventListener('mouseover', onmouseoverRow)
@@ -91,10 +109,12 @@ let dataTable_arrange
     })
 
     let div_arrange_header = document.getElementById('table-arrange_filter')
+    // refresh btn
     let btn_refresh_arrange = refreshButton()
     btn_refresh_arrange.addEventListener('click', () => {})
     div_arrange_header.insertBefore(
       btn_refresh_arrange, div_arrange_header.firstElementChild)
+    // adjust width
     div_arrange_header.classList.add('col-sm-12')
     div_arrange_header.parentElement.parentElement
       .appendChild(div_arrange_header)
@@ -109,12 +129,23 @@ let dataTable_arrange
     //console.info(dataTable_available.row(this).data())
   }
 
+  const $waiting_modal = $('#wait-arrange')
+
   function onclickAvailableRow (event) {
     let entryData = $(this.closest('table')).DataTable().row(this).data()
+    $waiting_modal.modal()
     entryData.parent.entry(entryData).then(openArrangeModal)
   }
 
   const $arrange_modal = $('#select-arrange')
+
+  function openArrangeModal (arrangeTab) {
+    $waiting_modal.modal('hide')
+    dataTable_arrange.clear()
+    dataTable_arrange.rows.add(Object.values(arrangeTab.entryData))
+    dataTable_arrange.draw()
+    $arrange_modal.modal()
+  }
 
   function onclickArrangeRow (event) {
     if (event.target.nodeName === 'A' ||
@@ -125,12 +156,6 @@ let dataTable_arrange
     entryData.parent.entry(entryData).then(() => $arrange_modal.modal('hide'))
   }
 
-  function openArrangeModal (arrangeTab) {
-    dataTable_arrange.clear()
-    dataTable_arrange.rows.add(Object.values(arrangeTab.entryData))
-    dataTable_arrange.draw()
-    $arrange_modal.modal()
-  }
 
   function refreshButton () {
     let template = document.createElement('template')

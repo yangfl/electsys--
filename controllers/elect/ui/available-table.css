@@ -2,23 +2,23 @@
   cursor: pointer; }
 
 .table-entry > tbody >  tr:hover, .preview {
-  background-color: var(--color-hover) !important; }
+  background-color: var(--color-hover); }
 
-.not-full {
-  background-color: var(--color-not-full) !important; }
+.table-entry .not-full {
+  background-color: var(--color-not-full); }
 
-.full {
-  background-color: var(--color-full) !important; }
+.table-entry .full {
+  background-color: var(--color-full); }
 
-.confilcted {
-  background-color: var(--color-confilcted) !important; }
+.table-entry .confilcted {
+  background-color: var(--color-confilcted); }
 
-.choosen {
-  background-color: var(--color-choosen) !important; }
+.table-entry .choosen {
+  background-color: var(--color-choosen); }
 
-.unavailable {
-  background-color: var(--color-unavailable) !important; }
+.table-entry .unavailable {
+  background-color: var(--color-unavailable); }
 
-.full, .confilcted, .unavailable {
+.table-entry .full, .table-entry .confilcted, .table-entry .unavailable {
   cursor: not-allowed;
-  color: gray !important; }
+  color: gray; }

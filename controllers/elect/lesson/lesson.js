@@ -55,50 +55,93 @@ const STRUCT_LESSON = [
 
 
 class Lesson {
+  /**
+   * Constructe from a DB recoder.
+   * @constructs Lesson
+   * @param {object} data - DB recoder which contains lesson info
+   */
   constructor (data = {}) {
-    this.PROPERTIES.forEach(property => {
-      this[property] = data[property]
+    if (data.fullref in this.constructor.cache) {
+      return this.constructor.cache[data.fullref]
+    }
+    // just for debugging convenience
+    if (data.fullref) {
+      this.constructor.cache[data.fullref] = this
+    }
+    this.PROPERTIES.forEach(k => {
+      // db will return null for empty values
+      this[k] = data[k] || undefined
     })
+    // warn for bsid-fullref pair
+    if (this.schedule === undefined) {
+      loggerInit('lesson', this.fullref +
+        ' schedule unknown, confilct detection unreliable',
+        'warn', true)
+    }
   }
 
-  static from (data) {
+  static from (token, _data) {
+    let data
     let fullref
-    switch (typeof data) {
+    let p
+    switch (typeof token) {
       case 'number':
-        let bsid = data
+        let bsid = token
         if (!Number.isInteger(bsid)) {
           throw new TypeError('bsid must be integer')
         }
         return new Promise(resolve => {
           db_lesson.transaction('lesson').objectStore('lesson')
-            .index('bsid').get(bsid).onsuccess = event => resolve(
-              event.target.result ? new Lesson(event.target.result) :
-                fetchBsid(bsid).then(fullref => Lesson.from(fullref)))
-        })
-      case 'string':
-        fullref = data
-        // Lesson when found, otherwise undefined
-        return new Promise((resolve, reject) => {
-          db_lesson.transaction('lesson').objectStore('lesson')
-            .get(fullref).onsuccess = event => event.target.result ?
-             resolve(new Lesson(event.target.result)) :
-             reject(new RangeError(`fullref ${fullref} unknown`))
+            .index('bsid').get(bsid).onsuccess = event => {
+              if (event.target.result) {
+                // bsid found in db
+                return resolve(new Lesson(event.target.result))
+              } else {
+                // remote fetch
+                if (!(bsid in this.queueBsid)) {
+                  this.queueBsid[bsid] = fetchBsid(bsid).then(fullref => {
+                    delete this.queueBsid[bsid]
+                    return this.from(fullref, {bsid: bsid})
+                  })
+                }
+                return resolve(this.queueBsid[bsid])
+              }
+            }
         })
       case 'object':
+        data = token
         fullref = data.fullref
-        if (!fullref) {
+        if (typeof fullref !== 'string') {
           throw new TypeError('fullref required')
         }
-        return Lesson.from(fullref).catch(e => {
-          if (e instanceof RangeError) {
-            return new Lesson
-          } else {
-            throw e
+        return Lesson.from(data.fullref, data)
+      case 'string':
+        fullref = token
+        data = _data
+        p = new Promise((resolve, reject) => {
+          if (fullref in this.cache) {
+            return resolve(this.cache[fullref])
           }
-        }).then(lesson => {
-          lesson.update(data)
-          return lesson
+          db_lesson.transaction('lesson').objectStore('lesson')
+            .get(fullref).onsuccess = event => {
+              if (event.target.result) {
+                // fullref found in db
+                return resolve(new Lesson(event.target.result))
+              } else if (data) {
+                // create new
+                return resolve(new Lesson({fullref: fullref}))
+              } else {
+                return reject(new RangeError(`fullref ${fullref} unknown`))
+              }
+            }
         })
+        if (data) {
+          p.then(l => {
+            l.update(data)
+            return l
+          })
+        }
+        return p
       case 'undefined':
         throw new TypeError('1 argument required, but only 0 present.')
       default:
@@ -115,38 +158,36 @@ class Lesson {
     }
   }
 
-  update (data, noUpdate) {
-    if (typeof data !== 'object') {
-      throw new TypeError('data must be plain object')
-    }
-    /* if (data.fullref !== this.fullref) {
-      throw new TypeError(
-       `fullref mismatched, except '${this.fullref}', got '${data.fullref}'`)
-    } */
-
-    // detect update event
+  update (data, noStore) {
     let isUpdated = false
-    this.PROPERTIES.forEach(k => {
-      if (this[k] === undefined && data[k]) {
-        isUpdated = true
-        this[k] = data[k]
-      } else if (data[k] !== undefined && this[k] !== data[k]) {
-        console.warn('property %s:', k, this[k], 'confilcts with', data[k])
-      }
-    })
+    if (typeof data === 'object') {
+      /* if (data.fullref !== undefined && data.fullref !== this.fullref) {
+        throw new TypeError(
+         `fullref mismatched, except '${this.fullref}', got '${data.fullref}'`)
+      } */
+      // detect update event
+      this.PROPERTIES.forEach(k => {
+        if (this[k] === undefined && data[k]) {
+          isUpdated = true
+          this[k] = data[k]
+        } else if (data[k] !== undefined && this[k] !== data[k]) {
+          console.warn('property %s:', k, this[k], 'confilcts with', data[k])
+        }
+      })
+    }
+
     // try to parse schedule
-    if (!this.schedule && this.scheduleDesc &&
-        this.constructor.prototype.scheduleParser) {
+    if (!this.schedule && this.scheduleDesc) {
       this._parse()
       isUpdated = true
     }
 
-    if (isUpdated && !noUpdate) {
+    if (isUpdated && !noStore) {
       // updated, save lesson info
       return new Promise(resolve => {
         db_lesson.transaction(['lesson'], 'readwrite').objectStore('lesson')
-          .add(this).onsuccess = event => {
-            loggerInit('lesson', [this.fullref, 'stored'])
+          .put(this).onsuccess = event => {
+            loggerInit('lesson', this.fullref + ' stored')
             return resolve()
           }
       })
@@ -201,7 +242,10 @@ class Lesson {
 }
 
 Lesson.prototype.PROPERTIES = STRUCT_LESSON.map(cell => cell[0])
+Lesson.prototype.PROPERTIES.unshift('bsid')
 Lesson.prototype.PROPERTIES.push('schedule')
+Lesson.cache = {}
+Lesson.queueBsid = {}
 
 
 function fetchBsid (bsid) {

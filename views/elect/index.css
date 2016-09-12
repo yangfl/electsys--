@@ -3,8 +3,7 @@ body {
   margin: 8px; }
 
 body.modal-open {
-  padding-right: 0% !important;
-  overflow-y: auto; }
+  overflow-y: hidden; }
 
 
 /* tabs */
@@ -118,11 +117,8 @@ th {
 .th-name {
   min-width: 5em; }
 
-.th-ref, .th-credit, .th-hour {
+.th-ref, .th-type, .th-as, .th-credit, .th-hour {
   width: 10ex; }
-
-.th-type {
-  width: 20ex; }
 
 th, td {
   text-align: center; }
@@ -140,36 +136,42 @@ td > a.glyphicon {
 #table-arrange td:first-child {
   cursor: auto; }
 
+#table-arrange td:first-child span {
+  font-size: x-small;
+  white-space: nowrap; }
+
 #table-arrange td:nth-child(4) {
   white-space: nowrap; }
 
 #table-arrange td:nth-child(4) > .glyphicon {
-  color: #337ab7;
-  font-size: x-small; }
+  color: #337ab7; }
 
 #table-arrange td:nth-child(4) > .glyphicon-chevron-up,
 #table-arrange td:nth-child(4) > .glyphicon-chevron-down {
-  margin-left: 2px;
-  float: left; }
+  float: right; }
 
 #table-arrange td:nth-child(4) > .glyphicon-dashed-arrow-right {
+  bottom: -2px;
   font-size: 165%; }
 
 .td-min, .td-max  {
-  float: right; }
+  float: left; }
 
-.glyphicon-dashed-arrow-right {
+.glyphicon-dashed-arrow-left {
   font-weight: bolder;
   font-size: 165%;
   margin-top: -12px;
   margin-left: 3px;
   margin-right: 3px; }
 
-.glyphicon-dashed-arrow-right:before {
-  content: "\21E2"; }
+.glyphicon-dashed-arrow-left:before {
+  content: "\21E0"; }
 
 #table-arrange td:nth-child(5) {
   font-family: "??";
   font-size: x-small;
   text-align: initial;
   white-space: nowrap; }
+
+#table-arrange td:nth-child(6) {
+  font-size: small; }

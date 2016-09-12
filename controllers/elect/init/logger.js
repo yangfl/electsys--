@@ -92,6 +92,11 @@ window.addEventListener('unhandledrejection',
   })
 
 
+window.addEventListener('login', () => {
+  loggerInit('global', 'login fired')
+})
+
+
 $(document).ajaxError(
   function loggerAjaxError (event, jqXHR, settings, thrownError) {
     loggerError('ajax', ['Error when getting', settings.url, '@', settings.type])

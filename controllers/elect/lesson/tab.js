@@ -14,6 +14,8 @@ let rootTab
     // limited
     模块名称: 'name',
     模块说明: 'note',
+    // common
+    名称: 'name',
     // out
     年级: 'grade',
     // short
@@ -48,7 +50,7 @@ let rootTab
       }
 
       this.typeDesc = typeDesc  // [typeDesc]
-      this.data = undefined  // for ArrangeTab
+      this.data = undefined  // data in parent
       this.requestUrl = requestUrl
       this.requestData = requestData
       this.status = 'pending'
@@ -135,17 +137,21 @@ let rootTab
         this.bsids = []
         Array.prototype.forEach.call(
           this.scheduleTable.querySelectorAll('a'), a => {
-            if (a.parentNode.classList.contains('occupied')) {
-              a.parentNode.classList.add('multiple')
+            let td = a.parentNode
+            if (td.classList.contains('occupied')) {
+              td.classList.add('multiple')
+              if (td.innerHTML.includes('有冲突')) {
+                td.classList.add('conflicted')
+              }
             } else {
-              a.parentNode.classList.add('occupied')
+              td.classList.add('occupied')
             }
             let bsid = Number(a.href.split('bsid=')[1])
             /*
             let span_name = document.createElement('span')
             span_name.innerText = a.innerHTML
             span_name.setAttribute('data-bsid', bsid)
-            a.parentNode.insertBefore(span_name, a)
+            td.insertBefore(span_name, a)
             if (a.nextElementSibling) {
               a.nextElementSibling.remove()
             }
@@ -155,6 +161,8 @@ let rootTab
             a.removeAttribute('href')
             if (!this.bsids.includes(bsid)) {
               this.bsids.push(bsid)
+              // query bsid
+              Lesson.from(bsid)
             }
           })
       }
@@ -179,15 +187,23 @@ let rootTab
         })
     }
 
-    entry (entryData, button) {
+    entry (token, button) {
       if (this.entryData === undefined) {
         throw new TypeError('no entry available')
       }
-      if (entryData === undefined) {
+      if (token === undefined) {
         return Object.keys(this.entryData)
       }
 
-      let entryKey = entryData.ref
+      let entryData
+      let entryKey
+      if (typeof token === 'object') {
+        entryData = token
+        entryKey = entryData.ref
+      } else {
+        entryData = this.entryData[token]
+        entryKey = token
+      }
       if (!(entryKey in this.entryData)) {
         throw new TypeError(`invaild entry ${entryKey}`)
       }
@@ -275,6 +291,14 @@ let rootTab
         return this.status === 'loaded'
       }
     }
+
+    submit (button = '选课提交') {
+      return refetch(
+        this.formAction, postOptions(Object.assign(
+          {}, this.statusData, {[this.buttonData[button]]: button})),
+        undefined, () => false)
+      .then(() => window.dispatchEvent(new Event('login')))
+    }
   }
 
   class OutTab extends Tab {
@@ -304,6 +328,13 @@ let rootTab
       this.typeData = ELECT.list.tab
       this.entryCache = undefined
     }
+
+    submit (button) {
+      for (let k in this.typeCache) {
+        return this.typeCache[k].submit(button)
+      }
+      throw new TypeError('nothing to submit')
+    }
   }
 
   RootTab.prototype._type_request_url = ELECT.tab
@@ -315,9 +346,8 @@ let rootTab
       for (let bsid in this.entryData) {
         let lessonInfo = this.entryData[bsid]
         lessonInfo.name = this.data.name
-        lessonInfo.scheduleDesc = lessonInfo.scheduleDesc.split('<br>')
-          .slice(1).join('\r\n')
         q.push(Lesson.from(lessonInfo).then(lesson => {
+          // wrap for lesson
           let entryData = Object.create(lesson)
           for (let key in lessonInfo) {
             if (!(key in lesson)) {
@@ -330,7 +360,7 @@ let rootTab
       return Promise.all(q)
     }
 
-    entry (entryData, button = '选定此教师') {
+    submit (entryData, button = '选定此教师') {
       if (this.entryData === undefined) {
         throw new TypeError('no entry available')
       }
@@ -369,14 +399,15 @@ let rootTab
       for (let j = 0; j < l; j++) {
         let th_text = headers[j]
         let td = l_td[j]
-        let value = td.innerHTML.trim()
+        let value = td.innerHTML.replace(/\r/g, '').replace(/\n/g, '').trim()
+          .replace(/<br>/g, '\n')
         switch (th_text) {
           case '选择':
             key = td.getElementsByTagName('input')[0].name
             continue
           case '\xA0':
             let input = td.getElementsByTagName('input')[0]
-            key = input.value
+            key = Number(input.value)
             value = key
             break
           case '课程代码':
@@ -393,6 +424,12 @@ let rootTab
             break
           case '是否已选课程':
             value = value == '√'
+            break
+          case '周安排':
+            value = value.substr(value.indexOf('\n') + 1)
+            break
+          case '提示':
+            value = value == '人数满'
             break
         }
         if (!COLUMN_MAPPER[th_text]) debugger

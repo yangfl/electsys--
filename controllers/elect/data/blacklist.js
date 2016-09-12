@@ -884,16 +884,18 @@ const teacher = {
     '龙新华': 91.369,
     '龚玲': 97.4455,
   },
+
   url: 'http://tieba.baidu.com/f/search/res?ie=utf-8&' +
     'kw=%E4%B8%8A%E6%B5%B7%E4%BA%A4%E9%80%9A%E5%A4%A7%E5%AD%A6&qw=',
+
   render (name, title) {
     let a = '<a target="_blank" href="' +
       teacher.url + encodeURIComponent(name) + '">' + name
-    if (title) {
-      a += '<sub>' + title + '</sub>'
-    }
     if (name in teacher.map) {
-      a += '(' + teacher.map[name] + ')'
+      a += '<br />(' + teacher.map[name] + ')'
+    }
+    if (title) {
+      a += '<br /><span>' + title + '</span>'
     }
     a += '</a>'
     return a

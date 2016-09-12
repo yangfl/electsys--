@@ -13,17 +13,19 @@ class Queue extends Array {
   }
 
   push (func, options = this.defaultOptions) {
-    let p = new Deferred().then(func)
-    super.push([p, options])
+    let p = new Deferred()
+    let q = p.then(func)
+    super.push([p, q, options])
     this._start()
-    return p
+    return q
   }
 
   unshift (func, options = this.defaultOptions) {
-    let p = new Deferred().then(func)
-    super.unshift([p, options])
+    let p = new Deferred()
+    let q = p.then(func)
+    super.unshift([p, q, options])
     this._start()
-    return p
+    return q
   }
 
   _then (options) {
@@ -32,14 +34,14 @@ class Queue extends Array {
     }
     if (this.length) {
       let args = this.shift()
-      args[0].then(() => {
+      args[0].resolve()
+      return args[1].then(() => {
         // prevent long async stack
-        this._then(args[1])
+        this._then(args[2])
       }, () => {
         // stop when error
         this.running = false
       })
-      return args[0].resolve()
     } else {
       this.running = false
     }

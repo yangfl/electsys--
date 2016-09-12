@@ -40,14 +40,16 @@
   cursor: pointer;
   white-space: nowrap; }
 
-
 #container-schedule:hover th,
 #container-schedule:hover .classtit,
 #container-schedule:hover .classtit2 {
   background-color: #B8C790; }
 
-#container-schedule:hover .classmain, .occupied {
+#container-schedule:hover .classmain:not(.occupied), .occupied {
   background-color: #ebf2d3; }
+
+.occupied.confilcted {
+  background-color: #FFD1D1; }
 
 #container-schedule a {
   color: black; }

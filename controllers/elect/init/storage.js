@@ -73,7 +73,7 @@ function initTabCacheDatabase () {
     if (!db_tab.objectStoreNames.contains(cur_tab_store_name)) {
       return new Promise(function (resolve, reject) {
         db_tab.close()
-        request_tab = indexedDB.open('TabCacheDatabase', db_tab.version + 1)
+        let request_tab = indexedDB.open('TabCacheDatabase', db_tab.version + 1)
         request_tab.onupgradeneeded = function (event) {
           db_tab = this.result
           db_tab.onerror = function (event) {

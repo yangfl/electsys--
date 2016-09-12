@@ -227,9 +227,11 @@ function selectedTab () {
 
 
 const div_schedule = document.getElementById('container-schedule')
+/**
+ * @param {boolen | Event} reload
+ */
 function refreshAvailable (reload) {
   dataTable_available.clear()
-  // true | event
   if (reload) {
     dataTable_available.draw()
   }
@@ -240,7 +242,10 @@ function refreshAvailable (reload) {
     }
     return p.then(
       tab => {
-        dataTable_available.rows.add(Object.values(tab.entryData))
+        if (tab.entryData) {
+          dataTable_available.rows.add(Object.values(tab.entryData))
+        }
+        // remove old schedule table
         while (div_schedule.lastElementChild) {
           div_schedule.removeChild(div_schedule.lastElementChild)
         }
@@ -250,4 +255,5 @@ function refreshAvailable (reload) {
 }
 
 
-window.addEventListener('login', refreshAvailable)
+deferredPool.finished.then(() =>
+  window.addEventListener('login', refreshAvailable))

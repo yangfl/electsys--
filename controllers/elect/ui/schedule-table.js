@@ -44,7 +44,8 @@ function getEmptyScheduletable () {
           event.target.nodeName === 'TH') {
         div_handler_schedule.click()
       } else if (event.target.nodeName === 'TD') {
-        if (!event.target.classList.contains('multiple')) {
+        if (event.target.classList.contains('occupied') &&
+            !event.target.classList.contains('multiple')) {
           event.target.getElementsByTagName('a')[0].click()
         }
       } else if (event.target.nodeName === 'A') {
