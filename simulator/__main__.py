@@ -21,8 +21,8 @@ def index():
 
 @route('/edu/lesson/viewLessonArrangeDetail2.aspx')
 def viewLessonArrangeDetail2():
-    return template('{}/edu/lesson/viewLessonArrangeDetail2.aspx?bsid={}'
-        .format(ROOT, request.query.bsid))
+    return template(ROOT + '/edu/lesson/viewLessonArrangeDetail2.aspx?bsid=' +
+        request.query.bsid)
 
 
 @route('/edu/lesson/<page>')
@@ -38,22 +38,31 @@ def elect(page):
 @post('/edu/student/elect/<page>')
 def post_elect(page):
     for btn_key in request.forms.keys():
-        if 'lessonArrange' in btn_key:
+        if btn_key.endswith('lessonArrange'):
             redirect('/edu/lesson/viewLessonArrange.aspx?a=b')
-        if 'Bxk' in btn_key:
+        if btn_key.endswith('Bxk'):
             redirect('speltyRequiredCourse.aspx')
-        if 'Xxk' in btn_key:
+        if btn_key.endswith('Xxk'):
             redirect('speltyLimitedCourse.aspx')
-        if 'Txk' in btn_key:
+        if btn_key.endswith('Txk'):
             redirect('speltyCommonCourse.aspx')
-        if 'XuanXk' in btn_key:
+        if btn_key.endswith('XuanXk'):
             redirect('outSpeltyEP.aspx')
-        if 'Ytk' in btn_key:
+        if btn_key.endswith('Ytk'):
             redirect('freshmanLesson.aspx')
-        if 'Qxsy' in btn_key:
+        if btn_key.endswith('Qxsy'):
             redirect('secondRoundFP.aspx')
-        if 'FastCancel' in btn_key:
+        if btn_key.endswith('FastCancel'):
             redirect('removeLessonFast.aspx')
+    if '__EVENTTARGET' in request.forms:
+        with open(ROOT + '/edu/student/elect/' + page + '?' +
+                request.forms['__EVENTTARGET']) as f:
+            return f.read()
+    if 'OutSpeltyEP1$dpYx' in request.forms:
+        with open(ROOT + '/edu/student/elect/' + page + '?' +
+                request.forms['OutSpeltyEP1$dpYx'] + '-' +
+                request.forms['OutSpeltyEP1$dpNj']) as f:
+            return f.read()
     return repr(tuple(request.forms.keys()))
 
 
