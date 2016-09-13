@@ -1,22 +1,30 @@
 'use strict'
-let bsidQueue
-let lessonQueue
+let bsidQueue = new Queue
+let lessonQueue = new Queue
 
 
 config.loaders.push(item => {
-  refetch.default = {
-    filter: pageFilter,
-    tickerFactory: (url, options) => steppingTicker(
-      (url.method || options.method) === 'POST' ? 2000 : item.step_base,
-      item.step_penalty, item.step_retry),
+  if (typeof item.ajax_post_interval === 'number' &&
+      typeof item.ajax_get_interval === 'number' &&
+      typeof item.ajax_power === 'number' &&
+      typeof item.ajax_retry === 'number') {
+    refetch.default = {
+      filter: pageFilter,
+      tickerFactory: (url, options) => steppingTicker(
+        (url.method || options.method) === 'POST' ?
+          item.ajax_post_interval : item.ajax_get_interval,
+        item.ajax_power, item.ajax_retry),
+    }
   }
-  bsidQueue = new Queue
-  bsidQueue.defaultOptions = {
-    cooldown: item.step_base,
+  if (typeof item.ajax_get_interval === 'number') {
+    bsidQueue.defaultOptions = {
+      cooldown: item.ajax_get_interval,
+    }
   }
-  lessonQueue = new Queue
-  lessonQueue.defaultOptions = {
-    cooldown: 2000,
+  if (typeof item.ajax_post_interval === 'number') {
+    lessonQueue.defaultOptions = {
+      cooldown: item.ajax_post_interval,
+    }
   }
 })
 

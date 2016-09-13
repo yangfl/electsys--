@@ -58,7 +58,7 @@ class Lesson {
   /**
    * Constructe from a DB recoder.
    * @constructs Lesson
-   * @param {object} data - DB recoder which contains lesson info
+   * @param {Object} data - DB recoder which contains lesson info
    */
   constructor (data = {}) {
     if (data.fullref in this.constructor.cache) {
@@ -102,6 +102,10 @@ class Lesson {
                   this.queueBsid[bsid] = fetchBsid(bsid).then(fullref => {
                     delete this.queueBsid[bsid]
                     return this.from(fullref, {bsid: bsid})
+                  }, e => {
+                    this.queueBsid = {}
+                    return loggerError('lesson', 'Error when fetch ' + bsid,
+                      true)(e)
                   })
                 }
                 return resolve(this.queueBsid[bsid])

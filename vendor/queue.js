@@ -35,12 +35,10 @@ class Queue extends Array {
     if (this.length) {
       let args = this.shift()
       args[0].resolve()
-      return args[1].then(() => {
-        // prevent long async stack
-        this._then(args[2])
-      }, () => {
+      return args[1].then(() => this._then(args[2]), () => {
         // stop when error
         this.running = false
+        this.clear()
       })
     } else {
       this.running = false

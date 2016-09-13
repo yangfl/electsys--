@@ -379,14 +379,20 @@
     "message": "Words to be excluded (comma separated)"
   },
 
-  "elect_config_step": {
-    "message": "Step"
+  "elect_config_ajax": {
+    "message": "Ajax"
   },
-  "elect_config_step_base": {
-    "message": "base"
+  "elect_config_ajax_get_interval": {
+    "message": "Interval for GET"
   },
-  "elect_config_step_penalty": {
-    "message": "penalty"
+  "elect_config_ajax_post_interval": {
+    "message": "Interval for POST"
+  },
+  "elect_config_ajax_power": {
+    "message": "Multiplier"
+  },
+  "elect_config_ajax_retry": {
+    "message": "Max retry"
   },
 
   "elect_config_check_on_hover": {

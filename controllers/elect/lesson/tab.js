@@ -60,11 +60,17 @@ let rootTab
       this.statusData = undefined  // {name: value}
       this.buttonData = undefined  // {value: name}
 
-      this.entryData = undefined  // {ref | fullref: {name: value}}
-      this.entryCache = {}  // {ref | fullref: Tab}
+      /** @type {Object.<string, Object>} */
+      this.entryData = undefined
+      /** @type {Object.<string, Tab>} */
       this.entryFormName = undefined
-      this.typeData = undefined  // {typeDesc: {name: value}}
-      this.typeCache = {}  // {typeDesc: Tab}
+      /** @type {Object.<string, Object>} */
+      this.typeData = undefined
+      /** @type {Object.<string, ArrangeTab>} */
+      this.typeCache = {}
+
+      this.scheduleTable = undefined
+      this.bsids = undefined
     }
 
     consume (func) {
@@ -161,10 +167,9 @@ let rootTab
             a.removeAttribute('href')
             if (!this.bsids.includes(bsid)) {
               this.bsids.push(bsid)
-              // query bsid
-              Lesson.from(bsid)
             }
           })
+        this.bsids.sort()
       }
 
       // this.formAction
@@ -187,7 +192,13 @@ let rootTab
         })
     }
 
-    entry (token, button) {
+    /**
+     * Get arrange by token
+     * @param {(string|Object)} token
+     * @param {sring} button
+     * @return ArrangeTab
+     */
+    entry (token, button = '课程安排') {
       if (this.entryData === undefined) {
         throw new TypeError('no entry available')
       }
@@ -212,29 +223,23 @@ let rootTab
       if (entryKey in this.entryCache) {
         entryTab = this.entryCache[entryKey]
       } else {
-        let _button = typeof button === 'string' ? button : '课程安排'
         entryTab = new ArrangeTab(
           this.typeDesc.concat(entryKey), this.formAction, Object.assign(
             {}, this.statusData, {
               [this.entryFormName]: entryKey,
-              [this.buttonData[_button]]: _button,
+              [this.buttonData[button]]: button,
             }))
         entryTab.data = entryData
         this.entryCache[entryKey] = entryTab
       }
-
-      if (button === true) {
-        return entryTab.preload()
-      } else {
-        return entryTab.load()
-      }
+      return entryTab
     }
 
-    type (typeDesc, wantsPredict) {
+    type (...typeDescList) {
       if (this.typeData === undefined) {
         throw new TypeError('no type available')
       }
-      if (typeDesc === undefined || typeDesc.length === 0) {
+      if (typeDescList.length === 0) {
         return this._type_list()
       }
 

@@ -346,7 +346,8 @@ $(document).ready(() => {
 
   $('#btn-reset').on('shown.bs.popover', function () {
     $('#confirm-reset').click(() => {
-      initStorage().then(() => {
+      $('#confirm-reset').replaceWith('Waiting...')
+      initSyncStorage().then(() => {
         $('#confirm-reset').replaceWith('Done!')
         setTimeout(() => $(this).popover('hide'), MSG_HIDE_TIMEOUT) })
       return false }) })

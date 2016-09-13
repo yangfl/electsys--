@@ -228,7 +228,7 @@ function selectedTab () {
 
 const div_schedule = document.getElementById('container-schedule')
 /**
- * @param {boolen | Event} reload
+ * @param {(boolen|Event)} reload
  */
 function refreshAvailable (reload) {
   dataTable_available.clear()

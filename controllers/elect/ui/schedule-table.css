@@ -6,7 +6,7 @@
   left: 0;
   z-index: 900;
   width: 60%;
-  transition: 1s; }
+  transition: .3s; }
 
 #topbar-schedule:hover {
   opacity: .8; }
@@ -27,7 +27,7 @@
 
 #container-schedule th, #container-schedule td {
   /* make background-color transited */
-  transition: 1s; }
+  transition: .3s; }
 
 #container-schedule th, .classtit {
   height: 42px; }
@@ -65,7 +65,6 @@
   text-decoration: underline; }
 
 #handler-schedule {
-  position: fixed;
   float: left;
   min-width: 15%;
   background-color: #e9f4ca;

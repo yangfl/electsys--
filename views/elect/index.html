@@ -276,29 +276,41 @@
             </div>
             <div class="modal-body">
               <div class="bootstrap-dialog-body">
-                <h3 data-i18n="config_step"></h3>
+                <h3 data-i18n="config_ajax"></h3>
                 <div class="row">
-                  <div class="col-sm-2">
-                    <label class="text-center" for="step_base" data-i18n="config_step_base"></label>
+                  <div class="col-sm-4">
+                    <label class="text-center" for="ajax_get_interval"
+                        data-i18n="config_ajax_get_interval"></label>
                   </div>
                   <div class="col-sm-6">
-                    <input type="number" class="form-control config-sync" id="step_base" min="0" step="1" />
+                    <input type="number" class="form-control config-sync"
+                        id="ajax_get_interval" min="0" step="1" />
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-sm-2">
-                    <label class="text-center" for="step_penalty" data-i18n="config_step_penalty"></label>
+                  <div class="col-sm-4">
+                    <label class="text-center" for="ajax_post_interval"
+                        data-i18n="config_ajax_post_interval"></label>
                   </div>
                   <div class="col-sm-6">
-                    <input type="number" class="form-control config-sync" id="step_penalty" min="0" step="0.1" />
+                    <input type="number" class="form-control config-sync"
+                        id="ajax_post_interval" min="0" step="1" />
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-sm-2">
-                    <label class="text-center" for="step_retry" data-i18n="config_step_retry"></label>
+                  <div class="col-sm-4">
+                    <label class="text-center" for="ajax_power" data-i18n="config_ajax_power"></label>
                   </div>
                   <div class="col-sm-6">
-                    <input type="number" class="form-control config-sync" id="step_retry" min="0" step="1" />
+                    <input type="number" class="form-control config-sync" id="ajax_power" min="0" step="0.1" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-4">
+                    <label class="text-center" for="ajax_retry" data-i18n="config_ajax_retry"></label>
+                  </div>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control config-sync" id="ajax_retry" min="0" step="1" />
                   </div>
                 </div>
                 <div class="row">
