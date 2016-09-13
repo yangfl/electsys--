@@ -25,7 +25,8 @@ function postOptions (data) {
   let paras = []
   if (Array.isArray(data)) {
     for (let i = 0, k = data.length; i < k; i++) {
-      paras.push(encodeURIComponent(data[i].name) + '=' + encodeURIComponent(data[i].value))
+      paras.push(
+        encodeURIComponent(data[i][0]) + '=' + encodeURIComponent(data[i][1]))
     }
   } else {
     for (let key in data) {

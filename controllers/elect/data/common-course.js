@@ -1,6 +1,6 @@
 'use strict'
 // http://ge.jwc.sjtu.edu.cn/web/sjtu/GESJTU/198254-1980000005500.htm
-const commonCourse = {
+const COMMON_COURSE = {
   map: {
     'AD011': 1,
     'AM023': 1,

@@ -8,7 +8,9 @@ window.addEventListener('keydown', function (event) {
       let input = document.querySelector('.in input[type=search]') ||
         document.querySelector('#block-available input[type=search]')
       input.focus()
-      break
+      return
+    case 's':
+      return
     default:
       return
   }
@@ -33,5 +35,3 @@ if (current_page in SEL_BUTTON_PREVIOUS) {
     $(SEL_BUTTON_PREVIOUS[current_page]).click())
   $(document).bind('keydown', 'f', () =>
     $(SEL_BUTTON_NEXT[current_page]).click()) } */
-
-

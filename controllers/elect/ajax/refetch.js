@@ -1,15 +1,15 @@
 'use strict'
+function handleResponseError (response) {
+  if (!response.ok) {
+    throw Error(response.statusText)
+  }
+  return response
+}
+
 function refetch (url, options = {credentials: 'include'},
     filter = refetch.default.filter,
     ticker = refetch.default.tickerFactory(url, options)) {
-  const handleErrors = function (response) {
-    if (!response.ok) {
-      throw Error(response.statusText)
-    }
-    return response
-  }
-
-  return fetch(url, options).then(handleErrors)
+  return fetch(url, options).then(handleResponseError)
     .then(response => Promise.resolve(filter(response.clone())).then(result =>
       result ? response : Promise.reject(new TypeError('filter failed'))))
     .catch(error => Promise.resolve(ticker(error)).then(wantsRetry =>

@@ -1,6 +1,6 @@
 'use strict'
 // https://github.com/laohyx/electsys/blob/master/content_script/lesson.js
-const teacher = {
+const TEACHER = {
   map: {
     'Duane': 91.4786,
     'Susan': 82.6492,
@@ -890,9 +890,9 @@ const teacher = {
 
   render (name, title) {
     let a = '<a target="_blank" href="' +
-      teacher.url + encodeURIComponent(name) + '">' + name
-    if (name in teacher.map) {
-      a += '<br />(' + teacher.map[name] + ')'
+      this.url + encodeURIComponent(name) + '">' + name
+    if (name in this.map) {
+      a += '<br />(' + this.map[name] + ')'
     }
     if (title) {
       a += '<br /><span>' + title + '</span>'

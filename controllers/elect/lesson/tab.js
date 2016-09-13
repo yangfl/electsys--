@@ -400,7 +400,7 @@ let rootTab
         let th_text = headers[j]
         let td = l_td[j]
         let value = td.innerHTML.replace(/\r/g, '').replace(/\n/g, '').trim()
-          .replace(/<br>/g, '\n')
+          .replace(/<br>/g, '\r\n')
         switch (th_text) {
           case '选择':
             key = td.getElementsByTagName('input')[0].name
@@ -432,7 +432,9 @@ let rootTab
             value = value == '人数满'
             break
         }
-        if (!COLUMN_MAPPER[th_text]) debugger
+        if (!COLUMN_MAPPER[th_text]) {
+          console.debug(th_text)
+        }
         obj_row[COLUMN_MAPPER[th_text]] = value
       }
       data[key] = obj_row

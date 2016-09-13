@@ -72,7 +72,7 @@ let dataTable_arrange
         {
           data: 'teacher',
           render (data, type, row) {
-            return teacher.render(row.teacher, row.title)
+            return TEACHER.render(row.teacher, row.title)
           },
         },
         {data: 'fullref'},

@@ -35,23 +35,23 @@ _
   = $[^\\r\\n]* '\\r'? '\\n'
 `
 */
-const STRUCT_LESSON = [
-  ['academy', 'yxmc', String],
-  ['teacher', 'xm', String],
-  ['title', 'zcmc', String],
-  ['name', 'kcmc', String],
-  ['fullref', 'kcbm', String],
-  ['hour', 'xqxs', Number],
-  ['credit', 'xqxf', Number],
-  ['scheduleDesc', 'sjms', String],
-  ['note', 'bz', String],
-  ['grade', 'nj', Number],
-  ['year', 'xn', String],
-  ['semester', 'xq', Number],
-  // ['choosen', 'yqdrs', Number],
-  ['classroom', 'jsdm', String],
-  ['building', 'jxlmc', String],
-]
+const STRUCT_LESSON = {
+  yxmc: 'academy',
+  xm: 'teacher',
+  zcmc: 'title',
+  kcmc: 'name',
+  kcbm: 'fullref',
+  xqxs: 'hour',
+  xqxf: 'credit',
+  sjms: 'scheduleDesc',
+  bz: 'note',
+  nj: 'grade',
+  xn: 'year',
+  xq: 'semester',
+  // yqdrs: 'choosen',
+  jsdm: 'classroom',
+  jxlmc: 'building',
+}
 
 
 class Lesson {
@@ -241,7 +241,7 @@ class Lesson {
   }
 }
 
-Lesson.prototype.PROPERTIES = STRUCT_LESSON.map(cell => cell[0])
+Lesson.prototype.PROPERTIES = Object.values(STRUCT_LESSON)
 Lesson.prototype.PROPERTIES.unshift('bsid')
 Lesson.prototype.PROPERTIES.push('schedule')
 Lesson.cache = {}
