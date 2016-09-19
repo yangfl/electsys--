@@ -68,7 +68,7 @@ function selectedTab () {
         rootTab.type(btnTypeDesc).then(
           tab => {
             this.classList.remove(...CLASS_LOADING)
-            tab.consume(updataUI)
+            updataUI(tab)
           },
           e => {
             removeSelectedClass(this)
@@ -91,7 +91,7 @@ function selectedTab () {
 
   function onclickBtnSelect () {
     rootTab.type(typeDesc(this.previousElementSibling)).then(tab => {
-      tab.consume(updataUI)
+      updataUI(tab)
       $(this.nextElementSibling).modal()
     })
   }
@@ -100,10 +100,10 @@ function selectedTab () {
   let tbody_limited = document.getElementById('table-limited')
     .getElementsByTagName('tbody')[0]
 
-  function updataUI (node, typeDesc, tab) {
+  function updataUI (tab) {
     // detectFreshman
     if (btn_freshman) {
-      let input_freshman = node.querySelector('[value="新生研讨课"]')
+      let input_freshman = tab.node.querySelector('[value="新生研讨课"]')
       if (input_freshman && input_freshman.disabled) {
         btn_freshman.remove()
         btn_freshman = undefined
@@ -111,14 +111,14 @@ function selectedTab () {
     }
 
     // fillSelectModal
-    switch (typeDesc[0]) {
+    switch (tab.typeDesc[0]) {
       case 'speltyLimitedCourse':
-        for (let typeDesc in tab.typeData) {
-          let obj_row = tab.typeData[typeDesc]
+        for (let nextType in tab.types) {
+          let obj_row = tab.types[nextType]
           let row = tbody_limited.insertRow()
           row.insertCell().innerText = obj_row.name
           row.insertCell().innerText = obj_row.note
-          row.setAttribute('data-minor-type', typeDesc)
+          row.setAttribute('data-minor-type', nextType)
           row.addEventListener('click', selectOptionRow)
         }
         break
@@ -126,7 +126,7 @@ function selectedTab () {
         let div_select = document.getElementById('select-out')
           .getElementsByClassName('option-select')[0].children
         Array.prototype.forEach.call(
-          node.querySelectorAll('select'),
+          tab.node.querySelectorAll('select'),
           (select, i) => {
             select.classList.add('form-control')
             div_select[i].appendChild(select)
@@ -242,8 +242,8 @@ function refreshAvailable (reload) {
     }
     return p.then(
       tab => {
-        if (tab.entryData) {
-          dataTable_available.rows.add(Object.values(tab.entryData))
+        if (tab.entries) {
+          dataTable_available.rows.add(Object.values(tab.entries))
         }
         // remove old schedule table
         while (div_schedule.lastElementChild) {
