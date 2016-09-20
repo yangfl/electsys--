@@ -134,7 +134,7 @@ let dataTable_arrange
   function onclickAvailableRow (event) {
     let entryData = $(this.closest('table')).DataTable().row(this).data()
     $waiting_modal.modal()
-    entryData.parent.entry(entryData).then(openArrangeModal)
+    entryData.parent.entry(entryData.ref).then(openArrangeModal)
   }
 
   const $arrange_modal = $('#select-arrange')
@@ -153,7 +153,8 @@ let dataTable_arrange
       return
     }
     let entryData = $(this.closest('table')).DataTable().row(this).data()
-    entryData.parent.entry(entryData).then(() => $arrange_modal.modal('hide'))
+    entryData.parent.entry(entryData.bsid)
+      .then(() => $arrange_modal.modal('hide'))
   }
 
 

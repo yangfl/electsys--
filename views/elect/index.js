@@ -90,7 +90,7 @@ function postLogin (isLogin) {
     loggerInit('init.elect_stage', 'determinating elect stage')
     loggerInit('init.stu_info', 'getting semester info')
     return Promise.all([
-      findElectStage().then(function (stage) {
+      stage.find().then(stage => {
         if (stage) {
           loggerInit('init.elect_stage', 'Current stage is: ' + stage)
         } else {
@@ -100,7 +100,7 @@ function postLogin (isLogin) {
         }
       }, loggerError('init.elect_stage', true)),
       sdtleft.load().then(() => {
-        if (sdtleft.isVaild()) {
+        if (sdtleft.info.isVaild()) {
           loggerInit('init.info', [
             '\nThe semester info is:', JSON.stringify(sdtleft.info)])
         } else {
@@ -123,7 +123,7 @@ function preMain () {
 
 
 function main () {
-  if (current_stage && current_stage[1] == 3) {
+  if (stage[1] === 3) {
     // short semester
     document.getElementById('list-type').style.display = 'none'
     deferredPool.tasks.datatable.then(() => {

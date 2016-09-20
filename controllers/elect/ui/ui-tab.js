@@ -1,6 +1,6 @@
 'use strict'
 /* type */
-function typeDesc (node) {
+function nodeTypeDesc (node) {
   if (node.dataset.majorType) {
     // button
     if (node.dataset.minorType) {
@@ -18,7 +18,7 @@ function typeDesc (node) {
 }
 
 
-function selectedTab () {
+function selectedType () {
   let selectors = ['.btn-type.btn-info']
   if (document.getElementById('btn-limited').classList.contains('btn-info')) {
     selectors.push('#select-limited tr.row-selected')
@@ -26,12 +26,14 @@ function selectedTab () {
   if (document.getElementById('btn-out').classList.contains('btn-info')) {
     selectors.push('#select-out li')
   }
-  return Array.prototype.concat.apply([], selectors.map(selector =>
-    Array.prototype.map.call(document.querySelectorAll(selector), typeDesc)))
+  // [].toString happens to generate vaild css selector
+  return Array.prototype.map.call(
+    document.querySelectorAll(selectors.toString()), nodeTypeDesc)
 }
 
 
 {
+  /* tab select */
   let button_type = document.querySelectorAll('#list-type .btn-type')
   const CLASS_LOADING = [
     'progress-bar', 'progress-bar-info',
@@ -60,15 +62,15 @@ function selectedTab () {
         Array.prototype.forEach.call(button_type, removeSelectedClass)
       }
       this.classList.add('btn-info')
-      let btnTypeDesc = typeDesc(this)
-      if (rootTab.typeCached(btnTypeDesc)) {
+      let typeDesc = nodeTypeDesc(this)
+      if (rootTab.isLoaded(typeDesc)) {
         refreshAvailable()
       } else {
         this.classList.add(...CLASS_LOADING)
-        rootTab.type(btnTypeDesc).then(
+        rootTab.type(typeDesc).then(
           tab => {
             this.classList.remove(...CLASS_LOADING)
-            updataUI(tab)
+            updateUI(tab)
           },
           e => {
             removeSelectedClass(this)
@@ -90,8 +92,8 @@ function selectedTab () {
     div => div.children[1].addEventListener('click', onclickBtnSelect))
 
   function onclickBtnSelect () {
-    rootTab.type(typeDesc(this.previousElementSibling)).then(tab => {
-      updataUI(tab)
+    rootTab.type(nodeTypeDesc(this.previousElementSibling)).then(tab => {
+      updateUI(tab)
       $(this.nextElementSibling).modal()
     })
   }
@@ -100,7 +102,7 @@ function selectedTab () {
   let tbody_limited = document.getElementById('table-limited')
     .getElementsByTagName('tbody')[0]
 
-  function updataUI (tab) {
+  function updateUI (tab) {
     // detectFreshman
     if (btn_freshman) {
       let input_freshman = tab.node.querySelector('[value="新生研讨课"]')
@@ -111,7 +113,7 @@ function selectedTab () {
     }
 
     // fillSelectModal
-    switch (tab.typeDesc[0]) {
+    switch (tab.typeDesc) {
       case 'speltyLimitedCourse':
         for (let nextType in tab.types) {
           let obj_row = tab.types[nextType]
@@ -123,13 +125,12 @@ function selectedTab () {
         }
         break
       case 'outSpeltyEP':
-        let div_select = document.getElementById('select-out')
+        let l_div_select = document.getElementById('select-out')
           .getElementsByClassName('option-select')[0].children
-        Array.prototype.forEach.call(
-          tab.node.querySelectorAll('select'),
+        Array.from(tab.node.getElementsByTagName('select')).forEach(
           (select, i) => {
             select.classList.add('form-control')
-            div_select[i].appendChild(select)
+            l_div_select[i].appendChild(select)
           })
         break
     }
@@ -226,32 +227,34 @@ function selectedTab () {
 }
 
 
-const div_schedule = document.getElementById('container-schedule')
-/**
- * @param {(boolen|Event)} reload
- */
-function refreshAvailable (reload) {
-  dataTable_available.clear()
-  if (reload) {
-    dataTable_available.draw()
-  }
-  Promise.all(selectedTab().map(typeDesc => {
-    let p = rootTab.type(typeDesc)
-    if (reload && rootTab.typeCached(typeDesc)) {
-      p = p.then(tab => tab.load(true))
+{
+  const div_schedule = document.getElementById('container-schedule')
+  /**
+   * @param {(boolen|Event)} reload
+   */
+  this.refreshAvailable = function refreshAvailable (reload) {
+    dataTable_available.clear()
+    if (reload) {
+      dataTable_available.draw()
     }
-    return p.then(
-      tab => {
-        if (tab.entries) {
-          dataTable_available.rows.add(Object.values(tab.entries))
-        }
-        // remove old schedule table
-        while (div_schedule.lastElementChild) {
-          div_schedule.removeChild(div_schedule.lastElementChild)
-        }
-        div_schedule.appendChild(tab.scheduleTable)
-      })
-  })).then(() => dataTable_available.draw())
+    Promise.all(selectedType().map(typeDesc => {
+      let p = rootTab.type(typeDesc)
+      if (reload && rootTab.typeCached(typeDesc)) {
+        p = p.then(tab => tab.load(true))
+      }
+      return p.then(
+        tab => {
+          if (tab.entries) {
+            dataTable_available.rows.add(Object.values(tab.entries))
+          }
+          // remove old schedule table
+          while (div_schedule.lastElementChild) {
+            div_schedule.removeChild(div_schedule.lastElementChild)
+          }
+          div_schedule.appendChild(tab.scheduleTable)
+        })
+    })).then(() => dataTable_available.draw())
+  }
 }
 
 

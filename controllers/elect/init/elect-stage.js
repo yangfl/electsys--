@@ -1,13 +1,19 @@
 'use strict'
-let current_stage
+let stage
 {
-  this.findElectStage = async function () {
-    for (let test_stage of ELECT.list.stage) {
-      loggerInit('elect_stage', 'trying ' + test_stage)
-      if (await testElectConfirmPage(ELECT.stage(test_stage))) {
-        current_stage = test_stage
-        return test_stage
+  stage = {
+    async find () {
+      for (let test_stage of ELECT.list.stage) {
+        loggerInit('elect_stage', 'trying ' + test_stage)
+        if (await testElectConfirmPage(ELECT.stage(test_stage))) {
+          let i = test_stage.length
+          while (i--) {
+            this[i] = test_stage[i]
+          }
+          return this
+        }
       }
+      return
     }
   }
 

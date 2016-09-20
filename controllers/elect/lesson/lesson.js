@@ -1,59 +1,4 @@
 'use strict'
-/*
-const SCHEDULE_RULE = `
-Schedule
-  = '行课安排为第' _ block:Block+
-    { return Array.prototype.concat.apply([], block) }
-
-Block
-  = week_skip:$( '单周'  _? / '双周'  _? / '' ) entry:Entry+
-    {
-      week_skip = ['', '单周', '双周'].indexOf(week_skip.substr(0, 2))
-      entry = Array.prototype.concat.apply([], entry)
-      entry.forEach(e => e.unshift(week_skip))
-      return entry }
-
-Entry
-  = '星期' dow:[一二三四五六日] '  第' lesson_start:Integer '节--第' lesson_end:Integer '节' _ teacher:Teacher+
-    {
-      dow = '一二三四五六日'.indexOf(dow)
-      lesson_start--
-      return teacher.map(([week_start, week_end, classroom, teacher]) =>
-        [week_start, week_end, dow, lesson_start, lesson_end]) }
-
-Teacher
-  = classroom:$[^.(\\r\\n]* '.'? '(' week_start:Integer '-' week_end:Integer '周)' ' '? '.'? teacher:$[^\\r\\n]* _
-    {
-      week_start--
-      return [week_start, week_end, classroom, teacher] }
-
-Integer
-  = [0-9]+
-    { return Number(text()) }
-
-_
-  = $[^\\r\\n]* '\\r'? '\\n'
-`
-*/
-const STRUCT_LESSON = {
-  yxmc: 'academy',
-  xm: 'teacher',
-  zcmc: 'title',
-  kcmc: 'name',
-  kcbm: 'fullref',
-  xqxs: 'hour',
-  xqxf: 'credit',
-  sjms: 'scheduleDesc',
-  bz: 'note',
-  nj: 'grade',
-  xn: 'year',
-  xq: 'semester',
-  // yqdrs: 'choosen',
-  jsdm: 'classroom',
-  jxlmc: 'building',
-}
-
-
 class Lesson {
   /**
    * Constructe from a DB recoder.
@@ -68,7 +13,7 @@ class Lesson {
     if (data.fullref) {
       this.constructor.cache[data.fullref] = this
     }
-    this.PROPERTIES.forEach(k => {
+    this.constructor.PROPERTIES.forEach(k => {
       // db will return null for empty values
       this[k] = data[k] || undefined
     })
@@ -170,7 +115,7 @@ class Lesson {
          `fullref mismatched, except '${this.fullref}', got '${data.fullref}'`)
       } */
       // detect update event
-      this.PROPERTIES.forEach(k => {
+      this.constructor.PROPERTIES.forEach(k => {
         if (this[k] === undefined && data[k]) {
           isUpdated = true
           this[k] = data[k]
@@ -245,9 +190,62 @@ class Lesson {
   }
 }
 
-Lesson.prototype.PROPERTIES = Object.values(STRUCT_LESSON)
-Lesson.prototype.PROPERTIES.unshift('bsid')
-Lesson.prototype.PROPERTIES.push('schedule')
+/*
+Lesson.SCHEDULE_RULE = `
+Schedule
+  = '行课安排为第' _ block:Block+
+    { return Array.prototype.concat.apply([], block) }
+
+Block
+  = week_skip:$( '单周'  _? / '双周'  _? / '' ) entry:Entry+
+    {
+      week_skip = ['', '单周', '双周'].indexOf(week_skip.substr(0, 2))
+      entry = Array.prototype.concat.apply([], entry)
+      entry.forEach(e => e.unshift(week_skip))
+      return entry }
+
+Entry
+  = '星期' dow:[一二三四五六日] '  第' lesson_start:Integer '节--第' lesson_end:Integer '节' _ teacher:Teacher+
+    {
+      dow = '一二三四五六日'.indexOf(dow)
+      lesson_start--
+      return teacher.map(([week_start, week_end, classroom, teacher]) =>
+        [week_start, week_end, dow, lesson_start, lesson_end]) }
+
+Teacher
+  = classroom:$[^.(\\r\\n]* '.'? '(' week_start:Integer '-' week_end:Integer '周)' ' '? '.'? teacher:$[^\\r\\n]* _
+    {
+      week_start--
+      return [week_start, week_end, classroom, teacher] }
+
+Integer
+  = [0-9]+
+    { return Number(text()) }
+
+_
+  = $[^\\r\\n]* '\\r'? '\\n'
+`
+*/
+Lesson.STRUCT = {
+  yxmc: 'academy',
+  xm: 'teacher',
+  zcmc: 'title',
+  kcmc: 'name',
+  kcbm: 'fullref',
+  xqxs: 'hour',
+  xqxf: 'credit',
+  sjms: 'scheduleDesc',
+  bz: 'note',
+  nj: 'grade',
+  xn: 'year',
+  xq: 'semester',
+  // yqdrs: 'choosen',
+  jsdm: 'classroom',
+  jxlmc: 'building',
+}
+Lesson.PROPERTIES = Object.values(Lesson.STRUCT)
+Lesson.PROPERTIES.unshift('bsid')
+Lesson.PROPERTIES.push('schedule')
 Lesson.cache = {}
 Lesson.queueBsid = {}
 

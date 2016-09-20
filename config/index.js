@@ -185,10 +185,11 @@ var getMenu = $container =>
 sdtleft.load().then(() => {
   $(document).ready(() => {
     // fillInfo
-    if (sdtleft.isVaild()) {
+    if (sdtleft.info.isVaild()) {
       for (let key in sdtleft.info) {
         $('.userinfo-' + key).text(sdtleft.info[key])
       }
+      $('.userinfo-year').text(sdtleft.info.yearString)
       $('#navbar-login').hide()
       $('#navbar-logout').show()
     }

@@ -1,13 +1,83 @@
 'use strict'
 let sdtleft
 {
+  class StuInfo {
+    constructor (node) {
+      if (node instanceof HTMLElement) {
+        // parseInfo
+        for (let key in this.constructor.INFO_MAPPER) {
+          this[key] = node.querySelector(
+            '#' + this.constructor.INFO_MAPPER[key]).innerText.trim()
+        }
+        this.year = parseInt(this.year)
+        this.semester = Number(this.semester)
+      } else if (typeof node === 'object') {
+        for (let key in this.constructor.INFO_MAPPER) {
+          this[key] = node[key]
+        }
+      } else {
+        for (let key in this.constructor.INFO_MAPPER) {
+          this[key] = undefined
+        }
+        // quickInfo
+        let date = new Date()
+        let is_prev_year = date.getMonth() < 4 ||
+          (date.getMonth() == 5 && date.getDay() > 15) || date.getMonth() == 6
+        this.semester = is_prev_year + 1
+        this.year = date.getFullYear() - is_prev_year
+      }
+    }
+
+    get yearString () {
+      return this.year + '-' + (this.year + 1)
+    }
+
+    isVaild () {
+      for (let key in this) {
+        if (!this[key]) {
+          return false
+        }
+      }
+      return true
+    }
+
+    get next () {
+      let result = new this.constructor(this)
+      if (result.semester === 1) {
+        result.semester = 2
+      } else {
+        result.year++
+        result.semester = 1
+      }
+      return result
+    }
+
+    get prev () {
+      let result = new this.constructor(this)
+      if (result.semester === 1) {
+        result.year--
+        result.semester = 2
+      } else {
+        result.semester = 1
+      }
+      return result
+    }
+  }
+
+  StuInfo.INFO_MAPPER = {
+    'name': 'lblXm',
+    'major': 'lblZy',
+    'year': 'lblXn',
+    'semester': 'lblXq',
+  }
+
   sdtleft = {
     url: 'http://electsys.sjtu.edu.cn/edu/student/sdtleft.aspx',
 
     node: undefined,
     load (reload) {
       if (this.node && !reload) {
-        return Promise.resolve()
+        return Promise.resolve(this)
       } else {
         this._info = undefined
         this._menu = undefined
@@ -16,61 +86,17 @@ let sdtleft
             this.node = document.createElement('div')
             this.node.innerHTML = data.match(/<table[^]*<\/table>/i)[0]
               .replace(/src=/gi, 'tempsrc=')
+            return this
           })
       }
     },
 
     _info: undefined,
-    _info_mapper: {
-      'name': 'lblXm',
-      'major': 'lblZy',
-      'year': 'lblXn',
-      'semester': 'lblXq',
-    },
     get info () {
-      if (this._info) {
-        return this._info
-      } else if (this.node) {
-        // parseInfo
-        this._info = {}
-        for (let key in this._info_mapper) {
-          this._info[key] = this.node
-            .querySelector('#' + this._info_mapper[key]).innerText.trim()
-        }
-        return this._info
-      } else {
-        // quickInfo
-        let date = new Date()
-        let is_prev_year = date.getMonth() < 4 ||
-          (date.getMonth() == 5 && date.getDay() > 15) || date.getMonth() == 6
-        let semester = is_prev_year + 1
-        let start_year = date.getFullYear() - is_prev_year
-        /* if (next_p) {
-          // 1 -> 2, 2 -> 1
-          semester = 3 - semester
-          if (semester == 1) {
-            start_year++
-          }
-        } */
-        let year = start_year + '-' + (start_year + 1)
-        return {year: year, semester: semester}
-      }
-    },
-    isVaild () {
       if (this._info === undefined) {
-        if (this.node === undefined) {
-          return false
-        } else {
-          // try getter
-          this.info
-        }
+        this._info = new StuInfo(this.node)
       }
-      for (let key in this._info) {
-        if (this._info[key] === '') {
-          return false
-        }
-      }
-      return true
+      return this._info
     },
 
     _menu: undefined,

@@ -1,6 +1,6 @@
 'use strict'
-let Tab
 let rootTab
+let Tab
 {
   const COLUMN_MAPPER = {
     // all
@@ -35,26 +35,38 @@ let rootTab
   }
 
   Tab = class Tab {
-    constructor (parent, thisTypeDesc) {
+    constructor (parent, typeDesc) {
       if (this.constructor === Tab) {
-        switch (thisTypeDesc) {
+        switch (typeDesc) {
           case 'outSpeltyEP':
-            return new OutTab(parent, thisTypeDesc)
+            return new OutTab(parent, typeDesc)
           case undefined:
             return new RootTab
+        }
+        if (isEntry(typeDesc)) {
+          return new ArrangeTab(parent, typeDesc)
         }
       }
 
       /** @type {Array.<string>} */
       this.parent = parent
-      this.typeDesc = this.parent ?
-        this.parent.typeDesc.concat(thisTypeDesc) : []
-      this._request = undefined
+      this.typeDesc = typeDesc
+
       //               pending --> preloading --> preloaded
       //                  |---------------------------|
       //  failed <--> loading --> loaded
       this.status = 'pending'
+      this.preloaded = undefined
+      this.loaded = undefined
       this._clear()
+    }
+
+    get typeDescPath () {
+      if (this.parent) {
+        return this.parent.TypeDescPath.concat(this.typeDesc)
+      } else {
+        return []
+      }
     }
 
     _clear () {
@@ -77,38 +89,47 @@ let rootTab
 
       this.scheduleTable = undefined
       this.bsids = undefined
+
+      this._formData = undefined
     }
 
     preload () {
-      if (this.status === 'pending') {
-        return Promise.resolve(this)
+      if (this.preloaded === undefined) {
+        if (this.status === 'pending') {
+          this.status = 'preloading'
+          this.preloaded = new Promise(resolve => {
+            db_tab.transaction(cur_tab_store_name)
+              .objectStore(cur_tab_store_name).index('from').get(typeDesc)
+              .onsuccess = event => {
+                // TODO
+                this.status = 'preloaded'
+                return resolve(this)
+              }
+          })
+        } else {
+          return Promise.resolve(this)
+        }
       }
-      this.status = 'preloading'
-      return new Promise(resolve => {
-        db_tab.transaction(cur_tab_store_name).objectStore(cur_tab_store_name)
-          .index('from').get(typeDesc).onsuccess = event => {
-            // TODO
-            this.status = 'preloaded'
-            return resolve(this)
-          }
-      })
+      return this.preloaded
     }
 
     load (reload) {
-      if (this.status === 'loaded' && !reload) {
-        return Promise.resolve(this)
+      if (this.loaded === undefined) {
+        if (this.status !== 'loaded') {
+          this.status = 'loading'
+          this.loaded = this.parent.load()
+            .then(() => refetch(this.parent._nextRequest(this.typeDesc)))
+            .then(response => response.text()
+              .then(data => this._parse(data, response)))
+            .then(() => this).catch(e => {
+              this.status = 'failed'
+              throw e
+            })
+        } else {
+          return Promise.resolve(this)
+        }
       }
-      this.status = 'loading'
-      if (this.request === undefined) {
-        this.request = this.parent
-      }
-      return refetch(this.request)
-        .then(response => response.text()
-          .then(data => this._parse(data, response)))
-        .then(() => this).catch(e => {
-          this.status = 'failed'
-          throw e
-        })
+      return this.loaded
     }
 
     _parse (data, response) {
@@ -129,10 +150,7 @@ let rootTab
         Array.from(this.node.childNodes).forEach(n => form.appendChild(n))
         this.node = form
       }
-
-
-      let form_data = Array.from(new FormData(this.node).entries())
-      debugger
+      this._formData = Array.from(new FormData(this.node).entries())
 
       // this.types
       let first_type = this.node.querySelector('input[onclick][type="radio"]')
@@ -184,55 +202,38 @@ let rootTab
       }
     }
 
+    _nextRequest (nextType) {
+      return new Request(this.node.action, postOptions(Object.assign(
+        {}, this._formData, isEntry(nextType) ?
+          this._entryForm(nextType) : this._typeForm(nextType))))
+    }
+
+    _entryForm (nextType) {
+      return {
+        [this.node.querySelector('span > input').name]: nextType,
+        [this.node.querySelector('input[value=课程安排]').name]: '课程安排',
+      }
+    }
+
+    _typeForm (nextType) {
+      return {
+        __EVENTTARGET: nextType,
+        [nextType]: 'radioButton',
+      }
+    }
+
     /**
      * Get arrange by token
      * @param {(string|Object)} token
      * @param {sring} button
      * @return ArrangeTab
      */
-    entry (token, button = '课程安排') {
+    entry (nextType, wantsPredict) {
       if (this.entries === undefined) {
         throw new TypeError('no entry available')
       }
-
-      let entryData
-      let entryKey
-      if (typeof token === 'object') {
-        entryData = token
-        entryKey = entryData.ref
-      } else {
-        entryData = this.entries[token]
-        entryKey = token
-      }
-      if (entryData === undefined) {
-        throw new TypeError(`invaild entry ${entryKey}`)
-      }
-
-      let entryTab
-      if (entryKey in this._tabCache) {
-        entryTab = this._tabCache[entryKey]
-      } else {
-        entryTab = new ArrangeTab(this.typeDesc.concat(entryKey))
-        entryTab.request = new Request(this.formAction, Object.assign(
-          {}, this.statusData, {
-            [this.entryFormName]: entryKey,
-            [this.buttonData[button]]: button,
-          }))
-        entryTab.data = entryData
-        this._tabCache[entryKey] = entryTab
-      }
-      return entryTab
-    }
-
-    type (typeDesc, wantsPredict) {
-      if (this.types === undefined) {
-        throw new TypeError('no type available')
-      }
-
-      let nextType = typeDesc[0]
-      let nextTypeDesc = typeDesc.slice(1)
-      if (!(nextType in this.types)) {
-        return Promise.reject(new TypeError(`invaild type ${typeDesc}`))
+      if (!(nextType in this.entries)) {
+        return Promise.reject(new TypeError(`invaild enrty ${nextType}`))
       }
 
       let nextTab = this._tabCache[nextType]
@@ -242,13 +243,34 @@ let rootTab
       } else {
         p = nextTab.load()
       }
-      if (nextTypeDesc.length) {
-        p = p.then(tab => tab.type(nextTypeDesc, wantsPredict))
+      return p
+    }
+
+    type (typeDescPath, wantsPredict) {
+      if (this.types === undefined) {
+        throw new TypeError('no type available')
+      }
+
+      let nextType = typeDescPath[0]
+      let nextTypeDescPath = typeDescPath.slice(1)
+      if (!(nextType in this.types)) {
+        return Promise.reject(new TypeError(`invaild type ${typeDescPath}`))
+      }
+
+      let nextTab = this._tabCache[nextType]
+      let p
+      if (wantsPredict) {
+        p = nextTab.preload()
+      } else {
+        p = nextTab.load()
+      }
+      if (nextTypeDescPath.length) {
+        p = p.then(tab => tab.type(nextTypeDescPath, wantsPredict))
       }
       return p
     }
 
-    typeCached (typeDesc = []) {
+    isLoaded (typeDesc = []) {
       let curTab = this
       for (let i = 0; i < typeDesc.length; i++) {
         if (typeDesc[i] in curTab._tabCache) {
@@ -260,42 +282,42 @@ let rootTab
       return curTab.status === 'loaded'
     }
 
-    submit (button = '选课提交', data) {
-      return refetch(
-        this.formAction, postOptions(Object.assign(
-          {}, this.statusData, {[this.buttonData[button]]: button})),
-        undefined, () => false)
+    submit () {
+      return refetch(this.node.action, postOptions(Object.assign(
+        {}, this._formData, {
+          [this.node.querySelector('input[value=选课提交]').name]: '选课提交',
+        })), undefined, () => false)
       .then(() => window.dispatchEvent(new Event('login')))
-    }
-
-    _request (name, value, button) {
-      return {
-        __EVENTTARGET: nextType,
-        [nextType]: 'radioButton',
-      }
-      return new Request(this.formAction,
-        this.formAction && postOptions(Object.assign(
-          {}, this.statusData, this._type_request_data(nextType))))
     }
   }
 
   class OutTab extends Tab {
     _parse (data, response) {
       super._parse(data, response)
+      // this.types
+      let select = this.node.getElementsByTagName('select')
+      let select_school = select[0]
+      let select_year = select[1]
+      let types_school = {}
+      Array.prototype.forEach.call(select_school.options, option => {
+        types_school[option.value] = option.label
+      })
+      this.types = [types_school, Array.prototype.map.call(
+        select_year.options, option => Number(option.value))]
+
       // add school info
-      let select_school = this.node.getElementsByTagName('select')[0]
       let school = select_school.options[select_school.selectedIndex].text
       for (let key in this.entries) {
         this.entries[key].school = school
       }
     }
 
-    _type_request_data (nextType) {
+    _typeForm (nextType) {
       let value = nextType.split('-')
       return {
         OutSpeltyEP1$dpYx: value[0],
         OutSpeltyEP1$dpNj: value[1],
-        [this.buttonData['查 询']]: '查 询',
+        OutSpeltyEP1$btnQuery: '查 询',
       }
     }
   }
@@ -307,14 +329,14 @@ let rootTab
       this.types = ELECT.list.tab
     }
 
-    submit (button) {
+    submit () {
       for (let k in this._tabCache) {
-        return this._tabCache[k].submit(button)
+        return this._tabCache[k].submit()
       }
       throw new TypeError('nothing to submit')
     }
 
-    _request (name) {
+    _nextRequest (name) {
       return new Request(ELECT.tab(name), {credentials: 'include'})
     }
   }
@@ -323,11 +345,10 @@ let rootTab
     _parse (data, response) {
       super._parse(data, response)
       let q = []
-      let name = this.parent.entries[this.typeDesc[this.typeDesc.length - 1]]
-        .name
+      // add lesson name
+      let name = this.parent.entries[this.typeDesc].name
       for (let bsid in this.entries) {
         let lessonInfo = this.entries[bsid]
-        // add lesson name
         lessonInfo.name = name
         q.push(Lesson.from(lessonInfo).then(lesson => {
           // wrap for lesson
@@ -343,7 +364,7 @@ let rootTab
       return Promise.all(q)
     }
 
-    submit (button = '选定此教师', entryData) {
+    submit (entryData) {
       if (this.entries === undefined) {
         throw new TypeError('no entry available')
       }
@@ -352,13 +373,12 @@ let rootTab
       if (!(entryKey in this.entries)) {
         throw new TypeError(`invaild entry ${entryKey}`)
       }
-      refetch(this.formAction, postOptions(Object.assign(
-        {}, this.statusData, {
-          [this.entryFormName]: entryKey,
-          [this.buttonData[button]]: button,
-        }))).then(() => window.dispatchEvent(new Event('login')))
-
-      return super.submit(button)
+      return refetch(this.node.action, postOptions(Object.assign(
+        {}, this._formData, {
+          [this.node.querySelector('span > input').name]: entryKey,
+          [this.node.querySelector('input[value=选定此教师]').name]: '选定此教师',
+        })), undefined, () => false)
+      .then(() => window.dispatchEvent(new Event('login')))
     }
   }
 
@@ -423,12 +443,12 @@ let rootTab
     return data
   }
 
-  window.addEventListener('tab.debug', () => {
-    debugger
+  const ENTRY_PATTERN = /^[A-Z]{2}\d{3}$/
+  function isEntry (typeDesc) {
+    return ENTRY_PATTERN.test(typeDesc)
+  }
+
+  window.addEventListener('login', () => {
+    rootTab = new Tab
   })
 }
-
-
-window.addEventListener('login', () => {
-  rootTab = new Tab
-})

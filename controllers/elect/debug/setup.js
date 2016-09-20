@@ -21,7 +21,7 @@ function setupDebug (year = sdtleft.info.year, semester = sdtleft.info.semester,
         semester: semester,
       }
       ELECT.host = host
-      current_stage = [1, 1]
+      stage = [1, 1]
       window.addEventListener('beforeunload', () => {
         chrome.permissions.remove({ origins: [ELECT.host + '/'] }, removed => {
           if (removed) {
