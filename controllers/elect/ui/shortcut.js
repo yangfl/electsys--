@@ -1,5 +1,5 @@
 'use strict'
-window.addEventListener('keydown', function (event) {
+window.addEventListener('keydown', event => {
   if (event.defaultPrevented) {
     return
   }
@@ -10,6 +10,7 @@ window.addEventListener('keydown', function (event) {
       input.focus()
       return
     case 's':
+      document.getElementById('btn-submit').click()
       return
     default:
       return

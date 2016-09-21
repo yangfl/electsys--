@@ -2,52 +2,8 @@
 let rootTab
 let Tab
 {
-  const COLUMN_MAPPER = {
-    // all
-    选择: 'ref',
-    课程名称: 'name',
-    课程代码: 'ref',
-    课程性质: 'type',
-    学分: 'credit',
-    学时: 'hour',
-    是否已选课程: 'choosen',
-    // limited
-    模块名称: 'name',
-    模块说明: 'note',
-    // common
-    名称: 'name',
-    // out
-    年级: 'grade',
-    // short
-    课程模块: 'as',
-    提示: 'isFull',
-    //arrange
-    '\xA0': 'bsid',
-    教师姓名: 'teacher',
-    职称: 'title',
-    课号: 'fullref',
-    计划人数: 'max',
-    最低人数: 'min',
-    已选人数: 'pending',
-    确定人数: 'confirmed',
-    周安排: 'scheduleDesc',
-    备注: 'note',
-  }
-
   Tab = class Tab {
     constructor (parent, typeDesc) {
-      if (this.constructor === Tab) {
-        switch (typeDesc) {
-          case 'outSpeltyEP':
-            return new OutTab(parent, typeDesc)
-          case undefined:
-            return new RootTab
-        }
-        if (isEntry(typeDesc)) {
-          return new ArrangeTab(parent, typeDesc)
-        }
-      }
-
       /** @type {Array.<string>} */
       this.parent = parent
       this.typeDesc = typeDesc
@@ -76,7 +32,8 @@ let Tab
       this.entries = undefined
       /** @type {Object.<string, Object>} */
       this.types = undefined
-      let tabGenerator = nextType => new Tab(this, nextType)
+      let tabGenerator =
+        nextType => new (this._nextTabClass(nextType))(this, nextType)
       /** @type {Object.<string, Tab>} */
       this._tabCache = new Proxy({}, {
         get (target, key, receiver) {
@@ -114,17 +71,17 @@ let Tab
     }
 
     load (reload) {
-      if (this.loaded === undefined) {
+      if (this.loaded === undefined || this.status === 'failed') {
         if (this.status !== 'loaded') {
           this.status = 'loading'
           this.loaded = this.parent.load()
             .then(() => refetch(this.parent._nextRequest(this.typeDesc)))
             .then(response => response.text()
               .then(data => this._parse(data, response)))
-            .then(() => this).catch(e => {
-              this.status = 'failed'
-              throw e
-            })
+            .then(() => this)
+          this.loaded.catch(e => {
+            this.status = 'failed'
+          })
         } else {
           return Promise.resolve(this)
         }
@@ -199,6 +156,14 @@ let Tab
             }
           })
         this.bsids.sort()
+      }
+    }
+
+    _nextTabClass (nextType) {
+      if (isEntry(nextType)) {
+        return ArrangeTab
+      } else {
+        return Tab
       }
     }
 
@@ -291,6 +256,53 @@ let Tab
     }
   }
 
+  class RootTab extends Tab {
+    constructor () {
+      super()
+      this.status = 'loaded'
+      this.types = ELECT.list.tab
+    }
+
+    submit () {
+      for (let k in this._tabCache) {
+        return this._tabCache[k].submit()
+      }
+      return Promise.reject(new TypeError('nothing to submit'))
+    }
+
+    _nextTabClass (nextType) {
+      switch (nextType) {
+        case 'speltyCommonCourse':
+          return CommonTab
+        case 'outSpeltyEP':
+          return OutTab
+        default:
+          return Tab
+      }
+    }
+
+    _nextRequest (name) {
+      return new Request(ELECT.tab(name), {credentials: 'include'})
+    }
+  }
+
+  class CommonTab extends Tab {
+    _nextTabClass (nextType) {
+      return SubCommonTab
+    }
+  }
+
+  class SubCommonTab extends Tab {
+    _parse (data, response) {
+      super._parse(data, response)
+      // add common course info
+      let common_course_type = this.typeDesc[16] - 1
+      for (let ref in this.entries) {
+        this.entries[ref].as = common_course_type
+      }
+    }
+  }
+
   class OutTab extends Tab {
     _parse (data, response) {
       super._parse(data, response)
@@ -300,16 +312,32 @@ let Tab
       let select_year = select[1]
       let types_school = {}
       Array.prototype.forEach.call(select_school.options, option => {
-        types_school[option.value] = option.label
+        types_school[option.value] = option.text
       })
-      this.types = [types_school, Array.prototype.map.call(
-        select_year.options, option => Number(option.value))]
+      this.types = new Proxy(
+        [types_school, Array.prototype.map.call(
+          select_year.options, option => Number(option.value))],
+        {
+          has (target, key) {
+            let value = key.split('-')
+            return value[0] in target[0] && target[1].includes(Number(value[1]))
+          },
+        }
+      )
 
-      // add school info
-      let school = select_school.options[select_school.selectedIndex].text
-      for (let key in this.entries) {
-        this.entries[key].school = school
-      }
+      // move page info to the default subtype
+      let cur_school = select_school.options[select_school.selectedIndex].value
+      let cur_year = select_year.options[select_year.selectedIndex].text
+      let subtype_tab = this._tabCache[cur_school + '-' + cur_year]
+      subtype_tab.status = 'loaded'
+      subtype_tab.loaded = Promise.resolve(subtype_tab)
+      subtype_tab._parse(data, response)
+
+      this.entries = undefined
+    }
+
+    _nextTabClass (nextType) {
+      return SubOutTab
     }
 
     _typeForm (nextType) {
@@ -322,22 +350,15 @@ let Tab
     }
   }
 
-  class RootTab extends Tab {
-    constructor () {
-      super()
-      this.status = 'loaded'
-      this.types = ELECT.list.tab
-    }
-
-    submit () {
-      for (let k in this._tabCache) {
-        return this._tabCache[k].submit()
+  class SubOutTab extends Tab {
+    _parse (data, response) {
+      super._parse(data, response)
+      // add school info
+      let select_school = this.node.getElementsByTagName('select')[0]
+      let name_school = select_school.options[select_school.selectedIndex].text
+      for (let ref in this.entries) {
+        this.entries[ref].school = name_school
       }
-      throw new TypeError('nothing to submit')
-    }
-
-    _nextRequest (name) {
-      return new Request(ELECT.tab(name), {credentials: 'include'})
     }
   }
 
@@ -382,6 +403,38 @@ let Tab
     }
   }
 
+  /* helpers */
+  const COLUMN_MAPPER = {
+    // all
+    选择: 'ref',
+    课程名称: 'name',
+    课程代码: 'ref',
+    课程性质: 'type',
+    学分: 'credit',
+    学时: 'hour',
+    是否已选课程: 'choosen',
+    // limited
+    模块名称: 'name',
+    模块说明: 'note',
+    // common
+    名称: 'name',
+    // out
+    年级: 'grade',
+    // short
+    课程模块: 'as',
+    提示: 'isFull',
+    //arrange
+    '\xA0': 'bsid',
+    教师姓名: 'teacher',
+    职称: 'title',
+    课号: 'fullref',
+    计划人数: 'max',
+    最低人数: 'min',
+    已选人数: 'pending',
+    确定人数: 'confirmed',
+    周安排: 'scheduleDesc',
+    备注: 'note',
+  }
   function tableSerialize (table) {
     // header
     let headers = Array.prototype.map.call(
@@ -426,7 +479,11 @@ let Tab
           case '是否已选课程':
             value = value == '√'
             break
+          case '课程模块':
+            value = COMMON_COURSE.typeOf(value)
+            break
           case '周安排':
+            // remove first line
             value = value.substr(value.indexOf('\n') + 1)
             break
           case '提示':
@@ -449,6 +506,6 @@ let Tab
   }
 
   window.addEventListener('login', () => {
-    rootTab = new Tab
+    rootTab = new RootTab
   })
 }

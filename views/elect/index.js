@@ -41,10 +41,8 @@ function preDebug () {
 
 
 /* login */
-const WAIT_BEFORE_CANCEL = 1000
-
-
 function preLogin () {
+  const WAIT_BEFORE_CANCEL = 1000
   let waitID
   document.getElementById('init-elect').style.display = 'block'
   $('#confirm-elect')
@@ -61,7 +59,7 @@ function preLogin () {
       if (waitID) {
         clearTimeout(waitID)
         waitID = undefined
-        if (!isError) {
+        if (deferredPool.status !== 'failed') {
           // manually closed
           loggerInit('init.dialog', 'dialog closed by user', 'warn')
         } else {

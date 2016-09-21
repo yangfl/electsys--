@@ -54,19 +54,17 @@ class Queue extends Array {
 }
 
 
-class Deferred {
-  constructor (func) {
-    let resolve
-    let reject
-    let p = new Promise((u, v) => {
-      resolve = u
-      reject = v
-    })
-    if (typeof func === 'function') {
-      p = p.then(() => new Promise(func))
-    }
-    p.resolve = resolve
-    p.reject = reject
-    return p
+function Deferred () {
+  let resolve
+  let reject
+  let p = new Promise((u, v) => {
+    resolve = u
+    reject = v
+  })
+  if (typeof func === 'function') {
+    p = p.then(() => new Promise(func))
   }
+  p.resolve = resolve
+  p.reject = reject
+  return p
 }

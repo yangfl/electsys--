@@ -3,7 +3,9 @@ let dataTable_available
 let dataTable_arrange
 {
   deferredPool.tasks.datatable = deferredPool.start.then(() => {
-    let language_url = chrome.i18n.getMessage('dataTable_language_url')
+    const DATATABLE_LANGUAGE_URL =
+      chrome.i18n.getMessage('dataTable_language_url')
+
     dataTable_available = $('#table-available').DataTable({
       autoWidth: false,
       columns: [
@@ -29,6 +31,14 @@ let dataTable_arrange
         {
           data: 'as',
           defaultContent: '',
+          render (data, type, row) {
+            let i = data || COMMON_COURSE.map[row.ref]
+            if (i) {
+              // as in ShortSession
+              return COMMON_COURSE.type[i].substr(0, 5)
+            }
+            return ''
+          },
         },
         {data: 'credit'},
         {data: 'hour'},
@@ -37,32 +47,33 @@ let dataTable_arrange
         row.addEventListener('mouseover', onmouseoverRow)
         row.addEventListener('click', onclickAvailableRow)
       },
-      language: {url: language_url},
+      language: {url: DATATABLE_LANGUAGE_URL},
     })
-
     let div_available_header = document.getElementById('table-available_filter')
-    // refresh
+    // refresh button for available
     let btn_available_refresh = refreshButton()
     btn_available_refresh.addEventListener(
       'click', refreshAvailable.bind(undefined, true))
     div_available_header.insertBefore(
       btn_available_refresh, div_available_header.firstElementChild)
-    // upload
+    // upload button for available
     let div_temp = document.createElement('div')
     div_temp.innerHTML = `
-<button type="button" class="btn btn-default btn-submit" title="Upload">
+<button type="button" id="btn-submit" class="btn btn-default" title="Upload">
   <span class="glyphicon glyphicon-open"></span>
 </button>`
     let btn_available_submit = div_temp.firstElementChild
-    btn_available_submit.addEventListener(
-      'click', () => rootTab.submit().then(
-        () => {
-          // success
-        },
-        () => {
-          // failed
+    btn_available_submit.addEventListener('click', () => rootTab.submit().then(
+      () => {
+        loggerInit('submit', 'Successfully submit', 'info', true)
+      },
+      e => {
+        if (e instanceof TypeError) {
+          loggerInit('submit', e.message, 'warn', true)
+          return
         }
-      ))
+      }
+    ))
     div_available_header.insertBefore(
       btn_available_submit, div_available_header.firstElementChild)
 
@@ -105,16 +116,15 @@ let dataTable_arrange
         row.addEventListener('click', onclickArrangeRow)
       },
       paging: false,
-      language: {url: language_url},
+      language: {url: DATATABLE_LANGUAGE_URL},
     })
-
     let div_arrange_header = document.getElementById('table-arrange_filter')
-    // refresh btn
+    // refresh button for arrange
     let btn_refresh_arrange = refreshButton()
     btn_refresh_arrange.addEventListener('click', () => {})
     div_arrange_header.insertBefore(
       btn_refresh_arrange, div_arrange_header.firstElementChild)
-    // adjust width
+    // adjust width for refresh button and search box
     div_arrange_header.classList.add('col-sm-12')
     div_arrange_header.parentElement.parentElement
       .appendChild(div_arrange_header)
@@ -129,16 +139,9 @@ let dataTable_arrange
     //console.info(dataTable_available.row(this).data())
   }
 
+
   const $waiting_modal = $('#wait-arrange')
-
-  function onclickAvailableRow (event) {
-    let entryData = $(this.closest('table')).DataTable().row(this).data()
-    $waiting_modal.modal()
-    entryData.parent.entry(entryData.ref).then(openArrangeModal)
-  }
-
   const $arrange_modal = $('#select-arrange')
-
   function openArrangeModal (arrangeTab) {
     $waiting_modal.modal('hide')
     dataTable_arrange.clear()
@@ -146,6 +149,12 @@ let dataTable_arrange
     dataTable_arrange.draw()
     $arrange_modal.modal()
   }
+  function onclickAvailableRow (event) {
+    let entryData = $(this.closest('table')).DataTable().row(this).data()
+    $waiting_modal.modal()
+    entryData.parent.entry(entryData.ref).then(openArrangeModal)
+  }
+
 
   function onclickArrangeRow (event) {
     if (event.target.nodeName === 'A' ||

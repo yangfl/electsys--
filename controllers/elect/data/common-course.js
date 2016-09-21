@@ -558,11 +558,20 @@ const COMMON_COURSE = {
     'SP192': 4,
   },
   type: {
-    undefined: '',
     1: '人文学科',
     2: '社会科学',
     3: '自然科学与工程技术',
     4: '数学或逻辑学',
+  },
+  typeOf (str) {
+    if (!str) {
+      return
+    }
+    for (let i in this.type) {
+      if (this.type[i].startsWith(str)) {
+        return i
+      }
+    }
   },
   as (ref) {
     /* if (row[0] in obj_ref_fullref) {

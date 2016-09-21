@@ -1,25 +1,31 @@
 'use strict'
-let isError = false
 let ondeferredtaskerror
 
 
-let deferredPool = new class {
+let deferredPool = new class DeferredPool {
   constructor () {
-    this.start = new Deferred()
-    this.finished = this.start.then(() => {
-      loggerInit('deferred', 'deferred tasks start')
-      return Promise.all(Object.values(this.tasks))
-        .then(this.finished.resolve, this.finished.reject)
-    })
+    this.status = 'pending'
     this.tasks = {}
+    this.start = new Deferred()
+    this.finished = this.start.then(
+      () => Promise.all(Object.values(this.tasks)))
+
+    this.finished.then(() => {
+      this.status = 'finished'
+    }, () => {
+      this.status = 'failed'
+    })
   }
 }
 
 
+deferredPool.start.then(() => {
+  loggerInit('deferred', 'deferred tasks start')
+})
 deferredPool.finished.then(
   () => loggerInit('deferred', 'deferred tasks finished'),
   () => {
-    isError = true
+    loggerInit('deferred', 'Error in deferred tasks')
     if (ondeferredtaskerror) {
       return ondeferredtaskerror()
     }
