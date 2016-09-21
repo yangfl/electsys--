@@ -18,16 +18,12 @@ let dataTable_arrange
           data: 'name',
           render (data, type, row) {
             if (row.grade) {
-              return row.name + ' @ ' + row.grade +
-                '<a class="glyphicon glyphicon-info-sign" ' +
-                'data-toggle="tooltip" title="' + row.school + '"></a>'
+              return row.name +
+                '<span data-toggle="tooltip" title="' +
+                row.school + ' @ ' + row.grade +
+                '"><a class="glyphicon glyphicon-info-sign"></a></span>'
             } else {
               return row.name
-            }
-          },
-          createdCell (cell, cellData, rowData) {
-            if (rowData.grade) {
-              $('a', cell).tooltip()
             }
           },
         },

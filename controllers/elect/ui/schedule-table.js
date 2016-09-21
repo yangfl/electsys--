@@ -25,7 +25,9 @@
         }
       } else if (event.target.nodeName === 'A') {
         // remove lesson when click a
-        Lesson.from(Number(event.target.dataset.bsid)).then(l => l.remove())
+        // Lesson.from(Number(event.target.dataset.bsid)).then(l => l.remove())
+        // no redirect
+        event.preventDefault()
       }
     })
 }

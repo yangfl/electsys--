@@ -123,8 +123,8 @@ th {
 th, td {
   text-align: center; }
 
-td > a.glyphicon {
-  margin: 0 6px;
+td:first-child > * {
+  margin-left: 6px;
   font-size: 10px; }
 
 #select-arrange > .modal-dialog {

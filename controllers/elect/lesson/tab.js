@@ -149,7 +149,7 @@ let rootTab
             */
             // disable anchor link
             a.setAttribute('data-bsid', bsid)
-            a.removeAttribute('href')
+            a.setAttribute('href', window.location.hash + '/remove/' + bsid)
             if (!this.bsids.includes(bsid)) {
               this.bsids.push(bsid)
             }

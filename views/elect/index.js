@@ -7,13 +7,12 @@ function startLoad () {
   if (!window.location.hash && window.sessionStorage.debug) {
     window.location.hash = '#debug'
   }
-  switch (window.location.hash) {
-    case '#list':
-      return showLessons()
-    case '#debug':
-      return preDebug()
-    default:
-      return preLogin()
+  if (window.location.hash.startsWith('#list')) {
+    return showLessons()
+  } else if (window.location.hash.startsWith('#debug')) {
+    return preDebug()
+  } else {
+    return preLogin()
   }
 }
 

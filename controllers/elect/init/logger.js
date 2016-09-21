@@ -42,6 +42,7 @@ function loggerError (func, hint, wantThrow) {
   }
 }
 
+
 function addAlert (func, msg, e, method, closeDelay) {
   let className
   let typeHint
@@ -106,7 +107,7 @@ window.addEventListener('login', () => {
 
 $(document).ajaxError(
   function loggerAjaxError (event, jqXHR, settings, thrownError) {
-    loggerError('ajax', ['Error when getting', settings.url, '@', settings.type])
-      (jqXHR)
+    loggerError(
+      'ajax', ['Error when getting', settings.url, '@', settings.type])(jqXHR)
     return
   })
