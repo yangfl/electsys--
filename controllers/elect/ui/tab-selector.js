@@ -225,38 +225,3 @@ function selectedType () {
       }
     })
 }
-
-
-{
-  const div_schedule = document.getElementById('container-schedule')
-  /**
-   * @param {(boolen|Event)} reload
-   */
-  this.refreshAvailable = function refreshAvailable (reload) {
-    dataTable_available.clear()
-    if (reload) {
-      dataTable_available.draw()
-    }
-    Promise.all(selectedType().map(typeDesc => {
-      let p = rootTab.type(typeDesc)
-      if (reload && rootTab.typeCached(typeDesc)) {
-        p = p.then(tab => tab.load(true))
-      }
-      return p.then(
-        tab => {
-          if (tab.entries) {
-            dataTable_available.rows.add(Object.values(tab.entries))
-          }
-          // remove old schedule table
-          while (div_schedule.lastElementChild) {
-            div_schedule.removeChild(div_schedule.lastElementChild)
-          }
-          div_schedule.appendChild(tab.scheduleTable)
-        })
-    })).then(() => dataTable_available.draw())
-  }
-}
-
-
-deferredPool.finished.then(() =>
-  window.addEventListener('login', refreshAvailable))

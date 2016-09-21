@@ -186,11 +186,11 @@ class Lesson {
     if (!this.hasOwnProperty('bsid')) {
       throw new TypeError('bsid unknown')
     }
-    return fetch(ELECT.remove(bsid))
+    return refetch(ELECT.remove(bsid), undefined, undefined, () => false)
+      .then(() => window.dispatchEvent(new Event('login')))
   }
 }
 
-/*
 Lesson.SCHEDULE_RULE = `
 Schedule
   = '行课安排为第' _ block:Block+
@@ -225,7 +225,6 @@ Integer
 _
   = $[^\\r\\n]* '\\r'? '\\n'
 `
-*/
 Lesson.STRUCT = {
   yxmc: 'academy',
   xm: 'teacher',

@@ -2,11 +2,16 @@
 let dataTable_available
 let dataTable_arrange
 {
+  const SUBMIT_ALERT_CLOSE_DELAY = 1500
+
+
   deferredPool.tasks.datatable = deferredPool.start.then(() => {
     const DATATABLE_LANGUAGE_URL =
       chrome.i18n.getMessage('dataTable_language_url')
 
-    dataTable_available = $('#table-available').DataTable({
+    /* table_available */
+    const table_available = document.getElementById('table-available')
+    dataTable_available = $(table_available).DataTable({
       autoWidth: false,
       columns: [
         {
@@ -43,12 +48,26 @@ let dataTable_arrange
         {data: 'credit'},
         {data: 'hour'},
       ],
-      createdRow (row) {
-        row.addEventListener('mouseover', onmouseoverRow)
-        row.addEventListener('click', onclickAvailableRow)
-      },
       language: {url: DATATABLE_LANGUAGE_URL},
     })
+
+    // available row event listener
+    let tbody_available = table_available.tBodies[0]
+    tbody_available.addEventListener('click', event => {
+      let entryData = dataTable_available.row(event.target.closest('tr')).data()
+      if (entryData) {
+        $waiting_modal.modal()
+        entryData.parent.entry(entryData.ref).then(openArrangeModal)
+      }
+    })
+    tbody_available.addEventListener('mouseover', event => {
+      let entryData = dataTable_available.row(event.target.closest('tr')).data()
+      if (entryData) {
+        // TODO
+        console.info(entryData)
+      }
+    })
+
     let div_available_header = document.getElementById('table-available_filter')
     // refresh button for available
     let btn_available_refresh = refreshButton()
@@ -65,11 +84,12 @@ let dataTable_arrange
     let btn_available_submit = div_temp.firstElementChild
     btn_available_submit.addEventListener('click', () => rootTab.submit().then(
       () => {
-        loggerInit('submit', 'Successfully submit', 'info', true)
+        loggerInit(
+          'submit', 'Successfully submit', 'info', SUBMIT_ALERT_CLOSE_DELAY)
       },
       e => {
         if (e instanceof TypeError) {
-          loggerInit('submit', e.message, 'warn', true)
+          loggerInit('submit', e.message, 'warn', SUBMIT_ALERT_CLOSE_DELAY)
           return
         }
       }
@@ -77,7 +97,9 @@ let dataTable_arrange
     div_available_header.insertBefore(
       btn_available_submit, div_available_header.firstElementChild)
 
-    dataTable_arrange = $('#table-arrange').DataTable({
+    /* table_arrange */
+    const table_arrange = document.getElementById('table-arrange')
+    dataTable_arrange = $(table_arrange).DataTable({
       autoWidth: false,
       columns: [
         {
@@ -111,13 +133,32 @@ let dataTable_arrange
           defaultContent: '',
         },
       ],
-      createdRow (row) {
-        row.addEventListener('mouseover', onmouseoverRow)
-        row.addEventListener('click', onclickArrangeRow)
-      },
       paging: false,
       language: {url: DATATABLE_LANGUAGE_URL},
     })
+
+    // arrange row event listener
+    let tbody_arrange = table_arrange.tBodies[0]
+    tbody_arrange.addEventListener('click', event => {
+      // target is a || target contains a
+      if (event.target.nodeName === 'A' ||
+          event.target.getElementsByTagName('a').length) {
+        return
+      }
+      let entryData = dataTable_arrange.row(event.target.closest('tr')).data()
+      if (entryData) {
+        entryData.parent.submit(entryData.bsid)
+          .then(() => $arrange_modal.modal('hide'))
+      }
+    })
+    tbody_arrange.addEventListener('mouseover', event => {
+      let entryData = dataTable_arrange.row(event.target.closest('tr')).data()
+      if (entryData) {
+        // TODO
+        console.info(entryData)
+      }
+    })
+
     let div_arrange_header = document.getElementById('table-arrange_filter')
     // refresh button for arrange
     let btn_refresh_arrange = refreshButton()
@@ -135,11 +176,8 @@ let dataTable_arrange
     () => loggerInit('init.datatable', 'table initialisation complete'),
     loggerError('init.datatable', 'Table error during init', true))
 
-  function onmouseoverRow () {
-    //console.info(dataTable_available.row(this).data())
-  }
 
-
+  /* helpers */
   const $waiting_modal = $('#wait-arrange')
   const $arrange_modal = $('#select-arrange')
   function openArrangeModal (arrangeTab) {
@@ -149,23 +187,6 @@ let dataTable_arrange
     dataTable_arrange.draw()
     $arrange_modal.modal()
   }
-  function onclickAvailableRow (event) {
-    let entryData = $(this.closest('table')).DataTable().row(this).data()
-    $waiting_modal.modal()
-    entryData.parent.entry(entryData.ref).then(openArrangeModal)
-  }
-
-
-  function onclickArrangeRow (event) {
-    if (event.target.nodeName === 'A' ||
-        event.target.getElementsByTagName('a').length) {
-      return
-    }
-    let entryData = $(this.closest('table')).DataTable().row(this).data()
-    entryData.parent.entry(entryData.bsid)
-      .then(() => $arrange_modal.modal('hide'))
-  }
-
 
   function refreshButton () {
     let template = document.createElement('template')
@@ -176,3 +197,30 @@ let dataTable_arrange
     return template.content.firstElementChild
   }
 }
+
+
+/**
+ * @param {(boolen|Event)} reload
+ */
+function refreshAvailable (reload) {
+  dataTable_available.clear()
+  if (reload) {
+    dataTable_available.draw()
+  }
+  Promise.all(selectedType().map(typeDesc => {
+    let p = rootTab.type(typeDesc)
+    if (reload && rootTab.isLoaded(typeDesc)) {
+      p = p.then(tab => tab.load(true))
+    }
+    return p.then(
+      tab => {
+        if (tab.entries) {
+          dataTable_available.rows.add(Object.values(tab.entries))
+        }
+        showScheduleTable(tab.scheduleTable)
+      })
+  })).then(() => dataTable_available.draw())
+}
+
+deferredPool.finished.then(() =>
+  window.addEventListener('login', refreshAvailable))

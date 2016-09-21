@@ -1,8 +1,7 @@
 'use strict'
 let rootTab
-let Tab
 {
-  Tab = class Tab {
+  class Tab {
     constructor (parent, typeDesc) {
       /** @type {Array.<string>} */
       this.parent = parent

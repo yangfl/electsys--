@@ -8,10 +8,12 @@ window.addEventListener('keydown', event => {
       let input = document.querySelector('.in input[type=search]') ||
         document.querySelector('#block-available input[type=search]')
       input.focus()
-      return
+      break
+    case 'r':
+      break
     case 's':
       document.getElementById('btn-submit').click()
-      return
+      break
     default:
       return
   }

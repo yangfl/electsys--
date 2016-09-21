@@ -1,18 +1,18 @@
 'use strict'
 function loggerInit (func, msg, method = 'debug',
-    wantsAlert = method === 'error') {
+    alertCloseDelay = method === 'error' ? true : undefined) {
   if (Array.isArray(msg)) {
     console[method]('%c[%s] %c%s:', 'color: lime',
       performance.now().toFixed(3), 'color: orange', func, ...msg)
-    if (wantsAlert) {
-      addAlert(func, msg.slice(0, msg.length - 1).join(''),
-        msg[msg.length - 1], method)
+    if (alertCloseDelay) {
+      return addAlert(func, msg.slice(0, msg.length - 1).join(''),
+        msg[msg.length - 1], method, alertCloseDelay)
     }
   } else {
     console[method]('%c[%s] %c%s:', 'color: lime',
       performance.now().toFixed(3), 'color: orange', func, msg)
-    if (wantsAlert) {
-      addAlert(func, msg, undefined, method)
+    if (alertCloseDelay) {
+      return addAlert(func, msg, undefined, method, alertCloseDelay)
     }
   }
 }
@@ -42,8 +42,7 @@ function loggerError (func, hint, wantThrow) {
   }
 }
 
-
-function addAlert (func, msg, e, method) {
+function addAlert (func, msg, e, method, closeDelay) {
   let className
   let typeHint
   switch (method) {
@@ -60,7 +59,8 @@ function addAlert (func, msg, e, method) {
       typeHint = 'Info'
       break
   }
-  document.getElementById('alert').innerHTML +=
+  const section_alert = document.getElementById('alert')
+  section_alert.innerHTML +=
 `<div class="alert alert-${className} fade in">
   <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
   <p><strong>${typeHint} from '${func}'</strong></p>
@@ -69,6 +69,13 @@ function addAlert (func, msg, e, method) {
   </div>${e ? `
   <pre>${e.statusText || e.stack || (typeof e === 'object' && JSON.stringify(e)) || e}</pre>` : ''}
 </div>`
+  let div_alert = section_alert.lastElementChild
+  if (typeof closeDelay === 'number') {
+    return [
+      div_alert, setTimeout(() => $(div_alert).alert('close'), closeDelay)
+    ]
+  }
+  return [div_alert]
 }
 
 

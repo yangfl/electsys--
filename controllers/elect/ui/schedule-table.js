@@ -1,33 +1,6 @@
 'use strict'
-let schedule_table
-
-
-function getEmptyScheduletable () {
-  if (schedule_table === undefined) {
-    schedule_table = '<table id="table-schedule">'
-    schedule_table += '<tr>'
-    for (let i_dow = 0; i_dow < 8; i_dow++) {
-      schedule_table += '<th>'
-      schedule_table += chrome.i18n.getMessage('scheduletable_' + i_dow)
-      schedule_table += '</th>'
-    }
-    schedule_table += '</tr>'
-    for (let i_lesson = 1; i_lesson <= 14; i_lesson++) {
-      schedule_table += '<tr><th>'
-      schedule_table += i_lesson
-      schedule_table += '</th>'
-      for (let i_dow = 0; i_dow < 7; i_dow++) {
-        schedule_table += '<td></td>'
-      }
-      schedule_table += '</tr>'
-    }
-    schedule_table += '</table>'
-  }
-  return schedule_table
-}
-
-
 {
+  /* handler */
   const div_handler_schedule = document.getElementById('handler-schedule')
   div_handler_schedule.addEventListener('click', function () {
     // since display status will be changed soon
@@ -42,16 +15,60 @@ function getEmptyScheduletable () {
       if (event.target.classList.contains('classtit') ||
           event.target.classList.contains('classtit2') ||
           event.target.nodeName === 'TH') {
+        // hide table when click th
         div_handler_schedule.click()
       } else if (event.target.nodeName === 'TD') {
+        // click inner a if only one a in td
         if (event.target.classList.contains('occupied') &&
             !event.target.classList.contains('multiple')) {
           event.target.getElementsByTagName('a')[0].click()
         }
       } else if (event.target.nodeName === 'A') {
-        console.info(event.target.nodeName)
+        // remove lesson when click a
+        Lesson.from(Number(event.target.dataset.bsid)).then(l => l.remove())
       }
     })
+}
+
+
+{
+  /* container */
+  const div_schedule = document.getElementById('container-schedule')
+
+  let schedule_table
+  function getEmptyScheduletable () {
+    if (schedule_table === undefined) {
+      schedule_table = '<table id="table-schedule">'
+      schedule_table += '<tr>'
+      for (let i_dow = 0; i_dow < 8; i_dow++) {
+        schedule_table += '<th>'
+        schedule_table += chrome.i18n.getMessage('scheduletable_' + i_dow)
+        schedule_table += '</th>'
+      }
+      schedule_table += '</tr>'
+      for (let i_lesson = 1; i_lesson <= 14; i_lesson++) {
+        schedule_table += '<tr><th>'
+        schedule_table += i_lesson
+        schedule_table += '</th>'
+        for (let i_dow = 0; i_dow < 7; i_dow++) {
+          schedule_table += '<td></td>'
+        }
+        schedule_table += '</tr>'
+      }
+      schedule_table += '</table>'
+    }
+    return schedule_table
+  }
+
+  this.showScheduleTable = function showScheduleTable (
+      table = getEmptyScheduletable()) {
+    // remove old schedule table
+    while (div_schedule.lastElementChild) {
+      div_schedule.removeChild(div_schedule.lastElementChild)
+    }
+    // append new
+    div_schedule.appendChild(table)
+  }
 }
 
 
