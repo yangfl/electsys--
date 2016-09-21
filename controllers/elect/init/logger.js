@@ -1,18 +1,19 @@
 'use strict'
 function loggerInit (func, msg, method = 'debug',
     alertCloseDelay = method === 'error' ? true : undefined) {
+  let curTime = performance.now().toFixed(3)
   if (Array.isArray(msg)) {
-    console[method]('%c[%s] %c%s:', 'color: lime',
-      performance.now().toFixed(3), 'color: orange', func, ...msg)
+    console[method]('%c[%s] %c%s:', 'color: lime', curTime, 'color: orange',
+      func, ...msg)
     if (alertCloseDelay) {
       return addAlert(func, msg.slice(0, msg.length - 1).join(''),
         msg[msg.length - 1], method, alertCloseDelay)
     }
   } else {
-    console[method]('%c[%s] %c%s:', 'color: lime',
-      performance.now().toFixed(3), 'color: orange', func, msg)
+    console[method]('%c[%s] %c%s:', 'color: lime', curTime, 'color: orange',
+      func, msg)
     if (alertCloseDelay) {
-      return addAlert(func, msg, undefined, method, alertCloseDelay)
+      return addAlert(func, msg, undefined, method, alertCloseDelay, curTime)
     }
   }
 }
@@ -43,7 +44,7 @@ function loggerError (func, hint, wantThrow) {
 }
 
 
-function addAlert (func, msg, e, method, closeDelay) {
+function addAlert (func, msg, e, method, closeDelay, curTime) {
   let className
   let typeHint
   switch (method) {
@@ -61,8 +62,9 @@ function addAlert (func, msg, e, method, closeDelay) {
       break
   }
   const section_alert = document.getElementById('alert')
+  let id_alert = 'alert-' + curTime
   section_alert.innerHTML +=
-`<div class="alert alert-${className} fade in">
+`<div id="${id_alert}" class="alert alert-${className} fade in">
   <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
   <p><strong>${typeHint} from '${func}'</strong></p>
   <div class="alert-hint">
@@ -73,7 +75,10 @@ function addAlert (func, msg, e, method, closeDelay) {
   let div_alert = section_alert.lastElementChild
   if (typeof closeDelay === 'number') {
     return [
-      div_alert, setTimeout(() => $(div_alert).alert('close'), closeDelay)
+      div_alert, setTimeout(
+        // NOTE: I don't know why node was changed
+        () => $(document.getElementById(id_alert)).alert('close'),
+        closeDelay)
     ]
   }
   return [div_alert]

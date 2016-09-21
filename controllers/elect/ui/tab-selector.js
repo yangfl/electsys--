@@ -86,23 +86,22 @@ function selectedType () {
   }
 
 
-  /* modal */
+  /* complex-btn */
   Array.prototype.forEach.call(
     document.getElementsByClassName('complex-btn'),
     div => div.children[1].addEventListener('click', onclickBtnSelect))
 
   function onclickBtnSelect () {
     rootTab.type(nodeTypeDesc(this.previousElementSibling)).then(tab => {
-      updateUI(tab)
-      $(this.nextElementSibling).modal()
+      updateUI(tab, true)
     })
   }
 
   let btn_freshman = document.getElementById('btn-freshman')
-  let tbody_limited = document.getElementById('table-limited')
-    .getElementsByTagName('tbody')[0]
-
-  function updateUI (tab) {
+  let tbody_limited = document.getElementById('table-limited').tBodies[0]
+  let modal_limited = document.getElementById('select-limited')
+  let modal_out = document.getElementById('select-out')
+  function updateUI (tab, forceOpen) {
     // detectFreshman
     if (btn_freshman) {
       let input_freshman = tab.node.querySelector('[value="新生研讨课"]')
@@ -111,44 +110,57 @@ function selectedType () {
         btn_freshman = undefined
       }
     }
-
     // fillSelectModal
     switch (tab.typeDesc) {
       case 'speltyLimitedCourse':
-        for (let nextType in tab.types) {
-          let obj_row = tab.types[nextType]
-          let row = tbody_limited.insertRow()
-          row.insertCell().innerText = obj_row.name
-          row.insertCell().innerText = obj_row.note
-          row.setAttribute('data-minor-type', nextType)
-          row.addEventListener('click', selectOptionRow)
+        if (!modal_limited.dataset.opened) {
+          for (let nextType in tab.types) {
+            let obj_row = tab.types[nextType]
+            let row = tbody_limited.insertRow()
+            row.insertCell().innerText = obj_row.name
+            row.insertCell().innerText = obj_row.note
+            row.setAttribute('data-minor-type', nextType)
+          }
+        }
+        if (!modal_limited.dataset.opened || forceOpen) {
+          modal_limited.dataset.opened = 1
+          $(modal_limited).modal()
         }
         break
       case 'outSpeltyEP':
-        let l_div_select = document.getElementById('select-out')
-          .getElementsByClassName('option-select')[0].children
-        Array.from(tab.node.getElementsByTagName('select')).forEach(
-          (select, i) => {
-            select.classList.add('form-control')
-            l_div_select[i].appendChild(select)
-          })
+        if (!modal_out.dataset.opened) {
+          let l_div_select = document.getElementById('select-out')
+            .getElementsByClassName('option-select')[0].children
+          Array.from(tab.node.getElementsByTagName('select')).forEach(
+            (select, i) => {
+              select.classList.add('form-control')
+              l_div_select[i].appendChild(select)
+            })
+        }
+        if (!modal_out.dataset.opened || forceOpen) {
+          modal_out.dataset.opened = 1
+          $(modal_out).modal()
+        }
         break
     }
   }
+}
 
 
-  /* limited */
-  function selectOptionRow () {
-    if (this.classList.contains('row-selected')) {
+/* limited */
+document.getElementById('table-limited').tBodies[0].addEventListener('click',
+  event => {
+    let tr = event.target.closest('tr')
+    if (tr.classList.contains('row-selected')) {
       if (event.ctrlKey) {
         // unselect
-        this.classList.remove('row-selected')
+        tr.classList.remove('row-selected')
       } else {
         // remove other
         Array.prototype.forEach.call(
-          this.parentElement.children,
+          tr.parentElement.children,
           row => row.classList.remove('row-selected'))
-        this.classList.add('row-selected')
+        tr.classList.add('row-selected')
       }
     } else {
       // select
@@ -157,13 +169,12 @@ function selectedType () {
       } else {
         // unselect other
         Array.prototype.forEach.call(
-          this.parentElement.children,
+          tr.parentElement.children,
           row => row.classList.remove('row-selected'))
       }
-      this.classList.add('row-selected')
+      tr.classList.add('row-selected')
     }
-  }
-}
+  })
 
 
 {
@@ -188,30 +199,26 @@ function selectedType () {
 
   let list_selected = document.getElementById('list-out-selected')
 
+  list_selected.addEventListener('click', event => {
+    if (event.target.nodeName === 'SPAN') {
+      event.target.closest('li').remove()
+    }
+  })
+
   function addOutSelected (data) {
     for (let option of data) {
-      addOutSelected_for(option)
+      let name = option[0][1] + '@' + option[1][1]
+      let id = option[0][0] + '-' + option[1][0]
+      if (document.querySelector('[data-minor-type="' + id + '"]')) {
+        return
+      }
+      let li = document.createElement('li')
+      li.classList.add('list-group-item')
+      li.setAttribute('data-minor-type', id)
+      li.innerHTML = name +
+        '<span class="pull-right entry-remove glyphicon glyphicon-remove"></span>'
+      list_selected.appendChild(li)
     }
-  }
-
-  function addOutSelected_for (option) {
-    let name = option[0][1] + '@' + option[1][1]
-    let id = option[0][0] + '-' + option[1][0]
-    if (document.querySelector('[data-id="' + id + '"]')) {
-      return
-    }
-    let li = document.createElement('li')
-    li.classList.add('list-group-item')
-    li.setAttribute('data-minor-type', id)
-    li.innerHTML = name +
-      '<span class="pull-right entry-remove glyphicon glyphicon-remove"></span>'
-    li.getElementsByTagName('span')[0]
-      .addEventListener('click', removeOutSeleced)
-    list_selected.appendChild(li)
-  }
-
-  function removeOutSeleced () {
-    this.closest('li').remove()
   }
 
   document.getElementById('btn-select-out-add').addEventListener('click',
