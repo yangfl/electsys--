@@ -1,7 +1,15 @@
 'use strict'
+class HttpError extends Error {
+  constructor (message) {
+    super(message)
+    this.name = 'HttpError'
+  }
+}
+
+
 function handleResponseError (response) {
   if (!response.ok) {
-    throw new Error(response.statusText)
+    throw new HttpError(response.statusText)
   }
   return response
 }
@@ -55,7 +63,7 @@ class LogoutError extends Error {
 }
 
 
-function pageVaildator (data) {
+function pageValidator (data) {
   if (data.includes('请勿频繁刷新本页面')) {
     return false
   }
@@ -70,5 +78,5 @@ function pageFilter (response) {
   if (response.url.endsWith('outTimePage.aspx')) {
     throw new LogoutError
   }
-  return response.text().then(pageVaildator)
+  return response.text().then(pageValidator)
 }

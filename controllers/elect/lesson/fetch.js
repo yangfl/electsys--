@@ -25,8 +25,10 @@ function fetchArranges (
         new FormData(doc.getElementsByTagName('form')[0]).entries())
       let button = doc.getElementById('ReportViewerControl_ctl00_ctl00')
       form_data.push([button.name, button.value])
+      // send query
       return fetch(ELECTQ.report, postOptions(form_data))
     }).then(handleResponseError).then(response => response.text())
+    // download data
     .then(data => fetch(ELECTQ.host + JSON.parse(
       data.match(/new RSClientController\((.*)\)/)[1].split(',')[14]) + 'XML',
       {credentials: 'include'})).then(handleResponseError)
@@ -35,39 +37,26 @@ function fetchArranges (
 
 
 function parseArrangesXML (data) {
-  Array.prototype.forEach.call(
-    // Detail
-    new DOMParser().parseFromString(data, 'application/xml')
-      .getElementsByTagName('Detail_Collection')[0].children,
-    detail => {
-      let entry = {}
-      for (let attr in STRUCT_DETAIL) {
-        let value = detail.getAttribute(attr).trim()
-        if (value && !isNaN(value)) {
-          value = Number(value)
-        } else if (STRUCT_DETAIL[attr] === 'scheduleDesc') {
-          value += '\r\n'
-        }
-        entry[STRUCT_DETAIL[attr]] = value
+  let l_detail = new DOMParser().parseFromString(data, 'application/xml')
+    .getElementsByTagName('Detail_Collection')[0].children
+  let i = l_detail.length
+  let p = []
+  while (i--) {
+    let detail = l_detail[i]
+    let entry = {}
+    for (let attr in STRUCT_DETAIL) {
+      let value = detail.getAttribute(attr).trim()
+      if (value && !isNaN(value)) {
+        value = Number(value)
+      } else if (STRUCT_DETAIL[attr] === 'scheduleDesc') {
+        value += '\r\n'
       }
-      Lesson.from(entry)
-    })
+      entry[STRUCT_DETAIL[attr]] = value
+    }
+    p.push(Lesson.from(entry))
+  }
+  return Promise.all(p)
 }
-
-
-var fixWeekSkip =
-    ([week_skip, week_start, week_end, dow, lesson_start, lesson_end]) => {
-  if (week_skip == 1) {
-    if (week_start & 1) {
-      week_start++ }
-    if (!(week_end & 1)) {
-      week_end-- }}
-  else if (week_skip == 2) {
-    if (!(week_start & 1)) {
-      week_start++ }
-    if (week_end & 1) {
-      week_end-- }}
-  return [week_skip, week_start, week_end, dow, lesson_start, lesson_end] }
 
 
 var addArrange = arrange => {

@@ -20,7 +20,6 @@ function startLoad () {
 /* dry run */
 function showLessons () {
   loggerInit('init', 'Show lesson list', 'log')
-  isDryRun = true
   document.getElementById('list-type').style.display = 'none'
   deferredPool.start.resolve()
   return preMain()
@@ -65,7 +64,6 @@ function preLogin () {
           // aborted by error
           loggerInit('init.dialog', 'process aborted by error', 'warn')
         }
-        return
       } else {
         // timeout
         loggerInit('init.dialog', 'dialog confirmed')
@@ -81,8 +79,8 @@ function preLogin () {
 }
 
 
-function postLogin (isLogin) {
-  if (isLogin) {
+function postLogin (loginSuccessful) {
+  if (loginSuccessful) {
     loggerInit('init.login', 'successfully login', 'log')
     loggerInit('init.elect_stage', 'determinating elect stage')
     loggerInit('init.stu_info', 'getting semester info')
@@ -97,11 +95,11 @@ function postLogin (isLogin) {
         }
       }, loggerError('init.elect_stage', true)),
       sdtleft.load().then(() => {
-        if (sdtleft.info.isVaild()) {
+        if (sdtleft.info.isValid()) {
           loggerInit('init.info', [
             '\nThe semester info is:', JSON.stringify(sdtleft.info)])
         } else {
-          return loggerError('init.info', 'sdtleft.info invaild', true)
+          return loggerError('init.info', 'sdtleft.info invalid', true)
             (sdtleft.info)
         }
       }, loggerError('init.info', true)).then(initTabCacheDatabase),

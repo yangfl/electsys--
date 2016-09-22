@@ -1,10 +1,10 @@
 #topbar-schedule {
   --radius: 3px;
   opacity: .4;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  z-index: 900;
+  z-index: 1700;
   width: 60%;
   transition: .3s; }
 
@@ -19,11 +19,14 @@
   -webkit-text-fill-color: initial; }
 
 #container-schedule > table {
-  border: 1px solid #ccc;
+  border: 1px solid #7ff;
   font-size: x-small;
   text-align: center;
   width: 100%;
   margin-bottom: -1px; }
+
+#container-schedule:hover > table {
+  border: 1px solid #ccc; }
 
 #container-schedule th, #container-schedule td {
   /* make background-color transited */
@@ -34,6 +37,14 @@
 
 .classtit2 {
   height: 25px; }
+
+@media (max-height: 410px) {
+  #container-schedule th, .classtit {
+    height: auto; }
+
+  .classtit2 {
+    height: auto; }
+}
 
 #container-schedule th, .classtit, .classtit2 {
   color: #4e6a00;

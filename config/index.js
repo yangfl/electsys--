@@ -185,7 +185,7 @@ var getMenu = $container =>
 sdtleft.load().then(() => {
   $(document).ready(() => {
     // fillInfo
-    if (sdtleft.info.isVaild()) {
+    if (sdtleft.info.isValid()) {
       for (let key in sdtleft.info) {
         $('.userinfo-' + key).text(sdtleft.info[key])
       }

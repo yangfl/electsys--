@@ -6,6 +6,8 @@
     <script src="/vendor/DataTables-1.10.12/js/jquery.dataTables.min.js"></script>
     <script src="/vendor/DataTables-1.10.12/js/dataTables.bootstrap.min.js"></script>
     <script src="/vendor/URI-1.18.1.min.js"></script>
+    <script src="/vendor/contextmenu/contextmenu.js"></script>
+    <script src="/vendor/open-post.js"></script>
     <script src="/vendor/queue.js"></script>
     <script src="/vendor/sleep.js"></script>
     <script src="/controllers/elect/init/logger.js"></script>
@@ -16,6 +18,7 @@
     <link href="/vendor/bootstrap3-dialog-1.35.3/css/bootstrap-dialog.min.css" rel="stylesheet" />
     <link href="/vendor/DataTables-1.10.12/css/dataTables.bootstrap.min.css" rel="stylesheet" />
     <link href="/vendor/bootstrap-pure-tooltip.css" rel="stylesheet" />
+    <link href="/vendor/contextmenu/contextmenu.css" rel="stylesheet" />
     <link href="/controllers/elect/ui/available-table.css" rel="stylesheet" />
     <link href="/controllers/elect/ui/schedule-table.css" rel="stylesheet" />
     <link href="/views/elect/index.css" rel="stylesheet" />
@@ -85,6 +88,7 @@
         <div id="handler-schedule"></div>
       </div>
 
+      <!-- type -->
       <div id="list-type" class="pull-right list-right">
         <button id="btn-required" type="button" class="btn btn-type"
             data-major-type="speltyRequiredCourse">required</button>
@@ -203,6 +207,21 @@
           title="Please manually check your result!">view result</a>
       </div>
 
+      <div id="menu-type" class="dropdown contextmenu">
+        <ul class="dropdown-menu" role="menu">
+          <li>
+            <a id="raw-type" tabindex="-1" class="btn btn-link" role="button" href target="_blank">
+              View raw tab in new window
+            </a>
+            <a id="raw-type-disabled" tabindex="-1" class="btn btn-link disabled" role="button"
+                title="Parent tab was not loaded">
+              View raw tab in new window
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- entry -->
       <div id="block-available">
         <table id="table-available" class="table table-striped table-bordered table-entry">
           <thead>
@@ -254,6 +273,7 @@
         </div>
       </div>
 
+      <!-- settings -->
       <div class="list-bottom">
         <button id="btn-config" type="button" class="btn btn-default spinning-onhover" title="Settings"
             data-toggle="modal" data-target="#modal-config">

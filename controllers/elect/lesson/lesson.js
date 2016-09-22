@@ -94,7 +94,7 @@ class Lesson {
       case 'undefined':
         throw new TypeError('1 argument required, but only 0 present.')
       default:
-        throw new TypeError('data type invaild')
+        throw new TypeError('data type invalid')
     }
   }
 
@@ -193,34 +193,79 @@ class Lesson {
 
 Lesson.SCHEDULE_RULE = `
 Schedule
-  = '行课安排为第' _ block:Block+
-    { return Array.prototype.concat.apply([], block) }
+  = '行课安排为第' _ l_block:Block+
+    {
+      return Array.prototype.concat.apply([], l_block)
+    }
 
 Block
-  = week_skip:$( '单周'  _? / '双周'  _? / '' ) entry:Entry+
+  = str_week_skip:$( '单周'  _? / '双周'  _? / '' ) l_entry:Entry+
     {
-      week_skip = ['', '单周', '双周'].indexOf(week_skip.substr(0, 2))
-      entry = Array.prototype.concat.apply([], entry)
-      entry.forEach(e => e.unshift(week_skip))
-      return entry }
+      let week_skip
+      switch (str_week_skip.substr(0, 2)) {
+        case '':
+          week_skip = 0
+          break
+        case '单周':
+          week_skip = 1
+          break
+        case '双周':
+          week_skip = 2
+          break
+      }
+      let l_arrange = []
+      for (let i = 0; i < l_entry.length; i++) {
+        let entry = l_entry[i]
+        for (let j = 0; j < entry.length; j++) {
+          // fixWeekSkip
+          let [week_start, week_end, dow, lesson_start, lesson_end] = entry[j]
+          week_start--
+          // single week
+          if (week_skip == 1) {
+            if (week_start & 1) {
+              week_start++
+            }
+            if (!(week_end & 1)) {
+              week_end--
+            }
+          }
+          // double week
+          else if (week_skip == 2) {
+            if (!(week_start & 1)) {
+              week_start++
+            }
+            if (week_end & 1) {
+              week_end--
+            }
+          }
+          l_arrange.push([week_skip, week_start, week_end, dow, lesson_start, lesson_end])
+        }
+      }
+      return l_arrange
+    }
 
 Entry
-  = '星期' dow:[一二三四五六日] '  第' lesson_start:Integer '节--第' lesson_end:Integer '节' _ teacher:Teacher+
+  = '星期' str_dow:[日一二三四五六] ' '+ '第' raw_lesson_start:Integer '节--第' lesson_end:Integer '节' _
+    l_teacher:Teacher+
     {
-      dow = '一二三四五六日'.indexOf(dow)
-      lesson_start--
-      return teacher.map(([week_start, week_end, classroom, teacher]) =>
-        [week_start, week_end, dow, lesson_start, lesson_end]) }
+      let dow = '日一二三四五六'.indexOf(str_dow)
+      let lesson_start = raw_lesson_start - 1
+      return l_teacher.map(([raw_week_start, raw_week_end]) =>
+        [raw_week_start, raw_week_end, dow, lesson_start, lesson_end])
+    }
 
 Teacher
-  = classroom:$[^.(\\r\\n]* '.'? '(' week_start:Integer '-' week_end:Integer '周)' ' '? '.'? teacher:$[^\\r\\n]* _
+  = classroom:$[^.(\\r\\n]* '.'? '(' raw_week_start:Integer '-' raw_week_end:Integer '周)'
+    ' '? '.'? teacher:$[^\\r\\n]* _
     {
-      week_start--
-      return [week_start, week_end, classroom, teacher] }
+      return [raw_week_start, raw_week_end, classroom, teacher]
+    }
 
 Integer
   = [0-9]+
-    { return Number(text()) }
+    {
+      return Number(text())
+    }
 
 _
   = $[^\\r\\n]* '\\r'? '\\n'

@@ -562,6 +562,7 @@ const COMMON_COURSE = {
     2: '社会科学',
     3: '自然科学与工程技术',
     4: '数学或逻辑学',
+    // TODO: http://www.jwc.sjtu.edu.cn/web/sjtu/198392-1980000006071.htm
   },
   typeOf (str) {
     if (!str) {

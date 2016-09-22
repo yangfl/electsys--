@@ -31,7 +31,7 @@ var splitWave = function* (wave) {
         char_wave = [] }}}}
 
 
-function isVaildResult (result) {
+function isValidResult (result) {
   return ( result.length == 4 || result.length == 5 ) &&
     Array.prototype.every.call(result, char => 'a' <= char && char <= 'z')
 }
@@ -50,7 +50,7 @@ var decodeCaptcha = (img, debug_p) => {
 
   // get image data
   var image_data = context.getImageData(0, 0, img.width, img.height)
-  image_data.binarizate = function (index, threshold) {
+  image_data.threshold = function (index, threshold) {
     threshold = typeof threshold !== 'undefined' ? threshold : 128
     for (var i = index; i < index + 3; i++) {
       if (this.data[i] < threshold) {
@@ -61,11 +61,11 @@ var decodeCaptcha = (img, debug_p) => {
   for (var x = 0; x < img.width; x++) {
     var sum_y_img = 0
     for (var y = 0; y < img.height; y++) {
-      sum_y_img += !image_data.binarizate(img.index(x, y)) }
+      sum_y_img += !image_data.threshold(img.index(x, y)) }
     l_sum_y_img.push(sum_y_img) }
 
   var result = ''
   for (var char_wave of splitWave(l_sum_y_img)) {
     result += findChar(char_wave) }
 
-  return (debug_p || isVaildResult(result)) ? result : '' }
+  return (debug_p || isValidResult(result)) ? result : '' }

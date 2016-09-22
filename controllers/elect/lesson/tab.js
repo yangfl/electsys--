@@ -106,7 +106,11 @@ let rootTab
         Array.from(this.node.childNodes).forEach(n => form.appendChild(n))
         this.node = form
       }
-      this._formData = Array.from(new FormData(this.node).entries())
+
+      this._formData = {}
+      for (let [name, value] of new FormData(this.node).entries()) {
+        this._formData[name] = value
+      }
 
       // this.types
       let first_type = this.node.querySelector('input[onclick][type="radio"]')
@@ -197,7 +201,7 @@ let rootTab
         throw new TypeError('no entry available')
       }
       if (!(nextType in this.entries)) {
-        return Promise.reject(new TypeError(`invaild enrty ${nextType}`))
+        return Promise.reject(new TypeError(`invalid enrty ${nextType}`))
       }
 
       let nextTab = this._tabCache[nextType]
@@ -218,7 +222,7 @@ let rootTab
       let nextType = typeDescPath[0]
       let nextTypeDescPath = typeDescPath.slice(1)
       if (!(nextType in this.types)) {
-        return Promise.reject(new TypeError(`invaild type ${typeDescPath}`))
+        return Promise.reject(new TypeError(`invalid type ${typeDescPath}`))
       }
 
       let nextTab = this._tabCache[nextType]
@@ -234,16 +238,16 @@ let rootTab
       return p
     }
 
-    isLoaded (typeDesc = []) {
+    cache (typeDesc = []) {
       let curTab = this
       for (let i = 0; i < typeDesc.length; i++) {
         if (typeDesc[i] in curTab._tabCache) {
           curTab = curTab._tabCache[typeDesc[i]]
         } else {
-          return false
+          return {}
         }
       }
-      return curTab.status === 'loaded'
+      return curTab
     }
 
     submit () {
@@ -391,7 +395,7 @@ let rootTab
 
       let entryKey = entryData.bsid
       if (!(entryKey in this.entries)) {
-        throw new TypeError(`invaild entry ${entryKey}`)
+        throw new TypeError(`invalid entry ${entryKey}`)
       }
       return refetch(this.node.action, postOptions(Object.assign(
         {}, this._formData, {

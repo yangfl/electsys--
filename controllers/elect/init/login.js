@@ -1,13 +1,8 @@
 'use strict'
 
-function isLogin (method) {
-  switch (method) {
-    case 1:
-      return !!stu_info.name
-    default:
-      return fetch(ELECT.testLogin, {credentials: 'include'})
-        .then(response => !response.url.endsWith('outTimePage.aspx'))
-  }
+function isLogin () {
+  return fetch(ELECT.testLogin, {credentials: 'include'})
+    .then(response => !response.url.endsWith('outTimePage.aspx'))
 }
 
 

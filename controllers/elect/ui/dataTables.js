@@ -47,7 +47,7 @@ let dataTable_arrange
       language: {url: DATATABLE_LANGUAGE_URL},
     })
 
-    // available row event listener
+    // available row event listener (note the placeholder)
     let tbody_available = table_available.tBodies[0]
     tbody_available.addEventListener('click', event => {
       let entryData = dataTable_available.row(event.target.closest('tr')).data()
@@ -60,7 +60,6 @@ let dataTable_arrange
       let entryData = dataTable_available.row(event.target.closest('tr')).data()
       if (entryData) {
         // TODO
-        console.info(entryData)
       }
     })
 
@@ -84,9 +83,10 @@ let dataTable_arrange
           'submit', 'Successfully submit', 'info', SUBMIT_ALERT_CLOSE_DELAY)
       },
       e => {
-        if (e instanceof TypeError) {
+        if (e instanceof TypeError || e instanceof HttpError) {
           loggerInit('submit', e.message, 'warn', SUBMIT_ALERT_CLOSE_DELAY)
-          return
+        } else {
+          throw e
         }
       }
     ))
@@ -133,7 +133,7 @@ let dataTable_arrange
       language: {url: DATATABLE_LANGUAGE_URL},
     })
 
-    // arrange row event listener
+    // arrange row event listener (note the placeholder)
     let tbody_arrange = table_arrange.tBodies[0]
     tbody_arrange.addEventListener('click', event => {
       // target is a || target contains a
@@ -151,7 +151,6 @@ let dataTable_arrange
       let entryData = dataTable_arrange.row(event.target.closest('tr')).data()
       if (entryData) {
         // TODO
-        console.info(entryData)
       }
     })
 
@@ -179,7 +178,7 @@ let dataTable_arrange
   function openArrangeModal (arrangeTab) {
     $waiting_modal.modal('hide')
     dataTable_arrange.clear()
-    dataTable_arrange.rows.add(Object.values(arrangeTab.entryData))
+    dataTable_arrange.rows.add(Object.values(arrangeTab.entries))
     dataTable_arrange.draw()
     $arrange_modal.modal()
   }
@@ -201,21 +200,28 @@ let dataTable_arrange
 function refreshAvailable (reload) {
   dataTable_available.clear()
   if (reload) {
+    // draw an empty table to indicate reloading
     dataTable_available.draw()
   }
-  Promise.all(selectedType().map(typeDesc => {
+  return Promise.all(selectedType().map(typeDesc => {
     let p = rootTab.type(typeDesc)
-    if (reload && rootTab.isLoaded(typeDesc)) {
+    if (reload && rootTab.cache(typeDesc).status === 'loaded') {
       p = p.then(tab => tab.load(true))
     }
-    return p.then(
-      tab => {
-        if (tab.entries) {
-          dataTable_available.rows.add(Object.values(tab.entries))
-        }
-        showScheduleTable(tab.scheduleTable)
-      })
-  })).then(() => dataTable_available.draw())
+    p.then(tab => {
+      // add entries to table
+      if (tab.entries) {
+        dataTable_available.rows.add(Object.values(tab.entries))
+      }
+    })
+    return p
+  })).then(l_tab => {
+    // selectedType can be empty
+    if (l_tab.length) {
+      showScheduleTable(l_tab[l_tab.length - 1].scheduleTable)
+    }
+    dataTable_available.draw()
+  })
 }
 
 deferredPool.finished.then(() =>

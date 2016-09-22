@@ -32,7 +32,7 @@ let sdtleft
       return this.year + '-' + (this.year + 1)
     }
 
-    isVaild () {
+    isValid () {
       for (let key in this) {
         if (!this[key]) {
           return false

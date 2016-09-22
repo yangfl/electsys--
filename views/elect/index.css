@@ -32,9 +32,6 @@ section:not(#alert):not(#init) {
 .list-right > :not(:last-child) {
   margin-bottom: 3px; }
 
-.btn-type > span {
-  display: none; }
-
 .complex-btn {
   display: flex; }
 
@@ -60,6 +57,9 @@ section:not(#alert):not(#init) {
 
 .progress-bar-active {
   animation: progress-bar-stripes 2s linear infinite; }
+
+#raw-type-disabled {
+  pointer-events: auto; }
 
 .list-bottom {
   position: fixed;
@@ -123,7 +123,7 @@ th {
 th, td {
   text-align: center; }
 
-td:first-child > * {
+td:first-child > span {
   margin-left: 6px;
   font-size: 10px; }
 
@@ -156,6 +156,15 @@ td:first-child > * {
 
 .td-min, .td-max  {
   float: left; }
+
+.td-max {
+  color: red; }
+
+.td-confirmed {
+  color: green; }
+
+.td-min {
+  color: blue; }
 
 .glyphicon-dashed-arrow-left {
   font-weight: bolder;
