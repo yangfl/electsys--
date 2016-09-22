@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import os
+
 from bottle import *
+
 
 ROOT = 'tpl'
 
@@ -21,8 +24,11 @@ def index():
 
 @route('/edu/lesson/viewLessonArrangeDetail2.aspx')
 def viewLessonArrangeDetail2():
-    return template(ROOT + '/edu/lesson/viewLessonArrangeDetail2.aspx?bsid=' +
-        request.query.bsid)
+    path = '/edu/lesson/viewLessonArrangeDetail2.aspx?bsid=' + \
+        request.query.bsid
+    if os.path.isfile(ROOT + path):
+        return template(ROOT + path)
+    redirect('http://electsys.sjtu.edu.cn' + path)
 
 
 @route('/edu/lesson/<page>')
