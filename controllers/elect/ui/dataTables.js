@@ -64,34 +64,46 @@ let dataTable_arrange
     })
 
     let div_available_header = document.getElementById('table-available_filter')
-    // refresh button for available
-    let btn_available_refresh = refreshButton()
-    btn_available_refresh.addEventListener(
-      'click', refreshAvailable.bind(undefined, true))
-    div_available_header.insertBefore(
-      btn_available_refresh, div_available_header.firstElementChild)
-    // upload button for available
-    let div_temp = document.createElement('div')
-    div_temp.innerHTML = `
+    if (window.location.hash.startsWith('#list')) {
+      let select_semester = document.createElement('select')
+      select_semester.id = 'table-available-semester'
+      select_semester.classList.add('form-control')
+      select_semester.addEventListener('change', function (event) {
+        this.options[this.selectedIndex]
+      })
+      div_available_header.insertBefore(
+        select_semester, div_available_header.firstElementChild)
+    } else {
+      // refresh button for available
+      let btn_available_refresh = refreshButton()
+      btn_available_refresh.addEventListener(
+        'click', refreshAvailable.bind(undefined, true))
+      div_available_header.insertBefore(
+        btn_available_refresh, div_available_header.firstElementChild)
+      // upload button for available
+      let div_temp = document.createElement('div')
+      div_temp.innerHTML = `
 <button type="button" id="btn-submit" class="btn btn-default" title="Upload">
   <span class="glyphicon glyphicon-open"></span>
 </button>`
-    let btn_available_submit = div_temp.firstElementChild
-    btn_available_submit.addEventListener('click', () => rootTab.submit().then(
-      () => {
-        loggerInit(
-          'submit', 'Successfully submit', 'info', SUBMIT_ALERT_CLOSE_DELAY)
-      },
-      e => {
-        if (e instanceof TypeError || e instanceof HttpError) {
-          loggerInit('submit', e.message, 'warn', SUBMIT_ALERT_CLOSE_DELAY)
-        } else {
-          throw e
-        }
-      }
-    ))
-    div_available_header.insertBefore(
-      btn_available_submit, div_available_header.firstElementChild)
+      let btn_available_submit = div_temp.firstElementChild
+      btn_available_submit.addEventListener('click',
+        () => rootTab.submit().then(
+          () => {
+            loggerInit(
+              'submit', 'Successfully submit', 'info', SUBMIT_ALERT_CLOSE_DELAY)
+          },
+          e => {
+            if (e instanceof TypeError || e instanceof HttpError) {
+              loggerInit('submit', e.message, 'warn', SUBMIT_ALERT_CLOSE_DELAY)
+            } else {
+              throw e
+            }
+          }
+        ))
+      div_available_header.insertBefore(
+        btn_available_submit, div_available_header.firstElementChild)
+    }
 
     /* table_arrange */
     const table_arrange = document.getElementById('table-arrange')
@@ -154,18 +166,20 @@ let dataTable_arrange
       }
     })
 
-    let div_arrange_header = document.getElementById('table-arrange_filter')
-    // refresh button for arrange
-    let btn_refresh_arrange = refreshButton()
-    btn_refresh_arrange.addEventListener('click', () => {})
-    div_arrange_header.insertBefore(
-      btn_refresh_arrange, div_arrange_header.firstElementChild)
-    // adjust width for refresh button and search box
-    div_arrange_header.classList.add('col-sm-12')
-    div_arrange_header.parentElement.parentElement
-      .appendChild(div_arrange_header)
-    while (div_arrange_header.previousElementSibling) {
-      div_arrange_header.previousElementSibling.remove()
+    if (!window.location.hash.startsWith('#list')) {
+      let div_arrange_header = document.getElementById('table-arrange_filter')
+      // refresh button for arrange
+      let btn_refresh_arrange = refreshButton()
+      btn_refresh_arrange.addEventListener('click', () => {})
+      div_arrange_header.insertBefore(
+        btn_refresh_arrange, div_arrange_header.firstElementChild)
+      // adjust width for refresh button and search box
+      div_arrange_header.classList.add('col-sm-12')
+      div_arrange_header.parentElement.parentElement
+        .appendChild(div_arrange_header)
+      while (div_arrange_header.previousElementSibling) {
+        div_arrange_header.previousElementSibling.remove()
+      }
     }
   }).then(
     () => loggerInit('init.datatable', 'table initialisation complete'),
@@ -218,7 +232,7 @@ function refreshAvailable (reload) {
   })).then(l_tab => {
     // selectedType can be empty
     if (l_tab.length) {
-      showScheduleTable(l_tab[l_tab.length - 1].scheduleTable)
+      scheduleTable.show(l_tab[l_tab.length - 1].scheduleTable)
     }
     dataTable_available.draw()
   })

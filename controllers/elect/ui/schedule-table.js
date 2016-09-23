@@ -10,8 +10,13 @@
       complete: () => this.classList.toggle('expand')
     })
   })
+
+  if (sessionStorage.showLessontable == 'true') {
+    div_handler_schedule.click()
+  }
+
   document.getElementById('container-schedule')
-    .addEventListener('click', function (event) {
+    .addEventListener('click', event => {
       if (event.target.classList.contains('classtit') ||
           event.target.classList.contains('classtit2') ||
           event.target.nodeName === 'TH') {
@@ -19,57 +24,74 @@
         div_handler_schedule.click()
       } else if (event.target.nodeName === 'TD') {
         // click inner a if only one a in td
-        if (event.target.classList.contains('occupied') &&
-            !event.target.classList.contains('multiple')) {
-          event.target.getElementsByTagName('a')[0].click()
+        let l_a = event.target.getElementsByTagName('a')
+        if (l_a.length === 1) {
+          l_a[0].click()
         }
       } else if (event.target.nodeName === 'A') {
         // remove lesson when click a
         // Lesson.from(Number(event.target.dataset.bsid)).then(l => l.remove())
-        // no redirect
+        // prevent redirect
         event.preventDefault()
       }
     })
 }
 
 
+let scheduleTable
 {
   /* container */
   const div_schedule = document.getElementById('container-schedule')
 
-  let schedule_table
-  function getEmptyScheduletable () {
-    if (schedule_table === undefined) {
-      schedule_table = '<table id="table-schedule">'
-      schedule_table += '<tr>'
-      for (let i_dow = 0; i_dow < 8; i_dow++) {
-        schedule_table += '<th>'
-        schedule_table += chrome.i18n.getMessage('scheduletable_' + i_dow)
-        schedule_table += '</th>'
-      }
-      schedule_table += '</tr>'
-      for (let i_lesson = 1; i_lesson <= 14; i_lesson++) {
-        schedule_table += '<tr><th>'
-        schedule_table += i_lesson
-        schedule_table += '</th>'
-        for (let i_dow = 0; i_dow < 7; i_dow++) {
-          schedule_table += '<td></td>'
+  scheduleTable = {
+    generate () {
+      let div = document.createElement('div')
+      div.innerHTML = getEmptyScheduletable()
+      return div.firstElementChild
+    },
+
+    preview: {
+      clear () {
+        let l_preview = div_schedule.getElementsByClassName('preview')
+        let i = l_preview.length
+        while (i--) {
+          l_preview.remove()
         }
-        schedule_table += '</tr>'
+      },
+    },
+
+    show (table = scheduleTable.generate()) {
+      // remove old schedule table
+      while (div_schedule.lastElementChild) {
+        div_schedule.removeChild(div_schedule.lastElementChild)
       }
-      schedule_table += '</table>'
+      // append new
+      div_schedule.appendChild(table)
     }
-    return schedule_table
   }
 
-  this.showScheduleTable = function showScheduleTable (
-      table = getEmptyScheduletable()) {
-    // remove old schedule table
-    while (div_schedule.lastElementChild) {
-      div_schedule.removeChild(div_schedule.lastElementChild)
+  let table_schedule
+  function getEmptyScheduletable () {
+    if (table_schedule === undefined) {
+      table_schedule = '<table id="table-schedule"><thead>'
+      table_schedule += '<tr>'
+      for (let i_dow = 0; i_dow < 8; i_dow++) {
+        table_schedule += '<th>'
+        table_schedule += chrome.i18n.getMessage('scheduletable_' + i_dow)
+        table_schedule += '</th>'
+      }
+      table_schedule += '</tr></thead><tbody>'
+      for (let i_lesson = 1; i_lesson <= 14; i_lesson++) {
+        table_schedule += '<tr><th>'
+        table_schedule += i_lesson
+        table_schedule += '</th>'
+        for (let i_dow = 0; i_dow < 7; i_dow++) {
+          table_schedule += '<td></td>'
+        }
+        table_schedule += '</tr>'
+      }
+      table_schedule += '</tbody></table>'
     }
-    // append new
-    div_schedule.appendChild(table)
   }
 }
 
@@ -93,9 +115,6 @@ var updateschedule = (s_fullref, test_fullref) => {
   s_fullref.forEach(fullref => drawLessonEntry($tr, fullref))
   if (test_fullref) {
     drawLessonEntry($tr, test_fullref, $td => $td.addClass('preview')) }}
-
-
-var clearPreviewLesson = () => $('.preview', $container_schedule).remove()
 
 
 var previewLesson = (fullref) => {

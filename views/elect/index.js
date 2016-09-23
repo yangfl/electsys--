@@ -17,12 +17,33 @@ function startLoad () {
 }
 
 
+{
+  function firstHash (hash) {
+    let i = hash.indexOf('/')
+    if (i === -1) {
+      return hash
+    } else {
+      return hash.substr(0, i)
+    }
+  }
+
+  window.addEventListener('hashchange', event => {
+    if (firstHash(new URI(event.oldURL).hash()) !==
+        firstHash(window.location.hash)) {
+      window.location.reload()
+    }
+  }, false)
+}
+
+
 /* dry run */
 function showLessons () {
   loggerInit('init', 'Show lesson list', 'log')
   document.getElementById('list-type').style.display = 'none'
+  document.getElementById('btn-result').style.display = 'none'
   deferredPool.start.resolve()
-  return preMain()
+  scheduleTable.show()
+  return setupList()
 }
 /* dry run */
 
@@ -126,9 +147,6 @@ function main () {
       let div_header = document.getElementById('table-available_filter')
       div_header.insertBefore(btn_result, div_header.firstElementChild)
     })
-  }
-  if (sessionStorage.showLessontable == 'true') {
-    document.getElementById('handler-schedule').click()
   }
   document.getElementById('init').style.display = 'none'
   document.getElementById('main').style.display = 'block'

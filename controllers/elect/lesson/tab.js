@@ -1,47 +1,13 @@
 'use strict'
 let rootTab
 {
-  class Tab {
-    constructor (parent, typeDesc) {
-      /** @type {Array.<string>} */
-      this.parent = parent
-      this.typeDesc = typeDesc
-
-      //               pending --> preloading --> preloaded
-      //                  |---------------------------|
-      //  failed <--> loading --> loaded
-      this.status = 'pending'
-      this.preloaded = undefined
-      this.loaded = undefined
-      this._clear()
-    }
-
-    get typeDescPath () {
-      if (this.parent) {
-        return this.parent.TypeDescPath.concat(this.typeDesc)
-      } else {
-        return []
-      }
-    }
-
-    _clear () {
+  class Tab extends TreeNode {
+    clear () {
+      super.clear()
       this.node = undefined
 
       /** @type {Object.<string, Object>} */
       this.entries = undefined
-      /** @type {Object.<string, Object>} */
-      this.types = undefined
-      let tabGenerator =
-        nextType => new (this._nextTabClass(nextType))(this, nextType)
-      /** @type {Object.<string, Tab>} */
-      this._tabCache = new Proxy({}, {
-        get (target, key, receiver) {
-          if (!(key in target)) {
-            target[key] = tabGenerator(key)
-          }
-          return Reflect.get(target, key, receiver)
-        },
-      })
 
       this.scheduleTable = undefined
       this.bsids = undefined
@@ -49,48 +15,24 @@ let rootTab
       this._formData = undefined
     }
 
-    preload () {
-      if (this.preloaded === undefined) {
-        if (this.status === 'pending') {
-          this.status = 'preloading'
-          this.preloaded = new Promise(resolve => {
-            db_tab.transaction(cur_tab_store_name)
-              .objectStore(cur_tab_store_name).index('from').get(typeDesc)
-              .onsuccess = event => {
-                // TODO
-                this.status = 'preloaded'
-                return resolve(this)
-              }
-          })
-        } else {
-          return Promise.resolve(this)
-        }
-      }
-      return this.preloaded
+    _preload () {
+      return new Promise(resolve => {
+        db_tab.transaction(cur_tab_store_name)
+          .objectStore(cur_tab_store_name).index('from').get(typeDesc)
+          .onsuccess = event => {
+            // TODO
+            return resolve(this)
+          }
+      })
     }
 
-    load (reload) {
-      if (this.loaded === undefined || this.status === 'failed') {
-        if (this.status !== 'loaded') {
-          this.status = 'loading'
-          this.loaded = this.parent.load()
-            .then(() => refetch(this.parent._nextRequest(this.typeDesc)))
-            .then(response => response.text()
-              .then(data => this._parse(data, response)))
-            .then(() => this)
-          this.loaded.catch(e => {
-            this.status = 'failed'
-          })
-        } else {
-          return Promise.resolve(this)
-        }
-      }
-      return this.loaded
+    _load (reload) {
+      return refetch(this.parent._nextRequest(this.typeDesc)).then(
+        response => response.text().then(data => this._parse(data, response)))
     }
 
     _parse (data, response) {
-      this.status = 'loaded'
-      this._clear()
+      this.clear()
 
       // this.node
       this.node = document.createElement('div')
@@ -212,42 +154,6 @@ let rootTab
         p = nextTab.load()
       }
       return p
-    }
-
-    type (typeDescPath, wantsPredict) {
-      if (this.types === undefined) {
-        throw new TypeError('no type available')
-      }
-
-      let nextType = typeDescPath[0]
-      let nextTypeDescPath = typeDescPath.slice(1)
-      if (!(nextType in this.types)) {
-        return Promise.reject(new TypeError(`invalid type ${typeDescPath}`))
-      }
-
-      let nextTab = this._tabCache[nextType]
-      let p
-      if (wantsPredict) {
-        p = nextTab.preload()
-      } else {
-        p = nextTab.load()
-      }
-      if (nextTypeDescPath.length) {
-        p = p.then(tab => tab.type(nextTypeDescPath, wantsPredict))
-      }
-      return p
-    }
-
-    cache (typeDesc = []) {
-      let curTab = this
-      for (let i = 0; i < typeDesc.length; i++) {
-        if (typeDesc[i] in curTab._tabCache) {
-          curTab = curTab._tabCache[typeDesc[i]]
-        } else {
-          return {}
-        }
-      }
-      return curTab
     }
 
     submit () {

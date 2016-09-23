@@ -1,9 +1,9 @@
 'use strict'
 class Lesson {
   /**
-   * Constructe from a DB recoder.
+   * Constructe from a DB record.
    * @constructs Lesson
-   * @param {Object} data - DB recoder which contains lesson info
+   * @param {Object} data - DB record which contains lesson info
    */
   constructor (data = {}) {
     if (data.fullref in this.constructor.cache) {
@@ -44,14 +44,15 @@ class Lesson {
               } else {
                 // remote fetch
                 if (!(bsid in this.queueBsid)) {
-                  this.queueBsid[bsid] = fetchBsid(bsid).then(fullref => {
-                    delete this.queueBsid[bsid]
-                    return this.from(fullref, {bsid: bsid})
-                  }, e => {
-                    this.queueBsid = {}
-                    return loggerError('lesson', 'Error when fetch ' + bsid,
-                      true)(e)
-                  })
+                  this.queueBsid[bsid] = this.converters.bsid2fullref(bsid)
+                    .then(fullref => {
+                      delete this.queueBsid[bsid]
+                      return this.from(fullref, {bsid: bsid})
+                    }, e => {
+                      this.queueBsid = {}
+                      return loggerError('lesson', 'Error when fetch ' + bsid,
+                        true)(e)
+                    })
                 }
                 return resolve(this.queueBsid[bsid])
               }
@@ -292,15 +293,50 @@ Lesson.PROPERTIES.unshift('bsid')
 Lesson.PROPERTIES.push('schedule')
 Lesson.cache = {}
 Lesson.queueBsid = {}
+Lesson.converters = {
+  bsid2fullref (bsid) {
+    return bsidQueue.push(() => refetch(ELECT.bsid(bsid))
+      .then(response => response.text()).then(data => {
+        let match = data.match(/课号.*\r?\n(.*)/)
+        if (!match) {
+          throw new TypeError('no fullref in response')
+        }
+        return match[1].trim()
+      }))
+  },
 
+  splitFullref (fullref) {
+    let result = fullref.match(/(\d{3})-\((.{11})\)(.{5})\((.{3})\)/)
+    result.shift()
+    // 001 2015-2016-1 XX101 ...
+    return result
+  },
 
-function fetchBsid (bsid) {
-  return bsidQueue.push(() => refetch(ELECT.bsid(bsid))
-    .then(response => response.text()).then(data => {
-      let match = data.match(/课号.*\r?\n(.*)/)
-      if (!match) {
-        throw new TypeError('no fullref in response')
-      }
-      return match[1].trim()
-    }))
+  selectAll () {
+    return new Promise(resolve => {
+      db_lesson.transaction('lesson').objectStore('lesson')
+        .getAll().onsuccess = event => {
+          let result = {}
+          let l_record = event.target.result
+          let i = l_record.length
+          while (i--) {
+            let record = l_record[i]
+            let fullref_split = Lesson.converters.splitFullref(record.fullref)
+
+            let obj_semester = result[fullref_split[1]]
+            if (!obj_semester) {
+              result[fullref_split[1]] = {}
+              obj_semester = result[fullref_split[1]]
+            }
+            let obj_ref = obj_semester[fullref_split[2]]
+            if (!obj_ref) {
+              obj_semester[fullref_split[2]] = {}
+              obj_ref = obj_semester[fullref_split[2]]
+            }
+            obj_ref[fullref_split[0]] = record
+          }
+          return resolve(result)
+        }
+    })
+  }
 }

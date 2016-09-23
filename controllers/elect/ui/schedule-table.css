@@ -19,30 +19,33 @@
   -webkit-text-fill-color: initial; }
 
 #container-schedule > table {
-  border: 1px solid #7ff;
   font-size: x-small;
   text-align: center;
   width: 100%;
   margin-bottom: -1px; }
 
-#container-schedule:hover > table {
-  border: 1px solid #ccc; }
-
 #container-schedule th, #container-schedule td {
+  border: 1px solid #7ff;
   /* make background-color transited */
   transition: .3s; }
 
-#container-schedule th, .classtit {
+#container-schedule:hover th, #container-schedule:hover td {
+  border: 1px solid #ccc; }
+
+#container-schedule thead th, .classtit {
   height: 42px; }
 
-.classtit2 {
+#container-schedule thead th:first-child {
+  width: 5em; }
+
+#container-schedule tbody th, .classtit2 {
   height: 25px; }
 
 @media (max-height: 410px) {
-  #container-schedule th, .classtit {
+  #container-schedule thead th, .classtit {
     height: auto; }
 
-  .classtit2 {
+  #container-schedule tbody th, .classtit2 {
     height: auto; }
 }
 

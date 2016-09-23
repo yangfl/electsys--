@@ -76,7 +76,7 @@ document.addEventListener('contextmenu', event => {
     }
   }
 })
-document.addEventListener('click',  event => {
+document.addEventListener('click', event => {
   if (contextMenu.getMenu(event.target)) {
     return
   }
