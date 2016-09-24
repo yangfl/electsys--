@@ -189,7 +189,6 @@ sdtleft.load().then(() => {
       for (let key in sdtleft.info) {
         $('.userinfo-' + key).text(sdtleft.info[key])
       }
-      $('.userinfo-year').text(sdtleft.info.yearString)
       $('#navbar-login').hide()
       $('#navbar-logout').show()
     }
@@ -342,14 +341,19 @@ $(document).ready(() => {
 
   $('#btn-clear-cache').click(function () {
     initLocalStorage().then(() => {
-      $('#result-clear-cache').text('Done!')
+      $('#result-clear-cache')
+        .text(chrome.i18n.getMessage('config_info_action_done'))
       setTimeout(() => $(this).popover('hide'), MSG_HIDE_TIMEOUT) }) })
 
   $('#btn-reset').on('shown.bs.popover', function () {
     $('#confirm-reset').click(() => {
-      $('#confirm-reset').replaceWith('Waiting...')
+      $('#result-reset')
+        .text(chrome.i18n.getMessage('config_info_action_wait'))
       initSyncStorage().then(() => {
-        $('#confirm-reset').replaceWith('Done!')
+        // listeners can not be fired on second set
+        config.load()
+        $('#result-reset')
+          .text(chrome.i18n.getMessage('config_info_action_done'))
         setTimeout(() => $(this).popover('hide'), MSG_HIDE_TIMEOUT) })
       return false }) })
 

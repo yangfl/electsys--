@@ -6,13 +6,13 @@ class Lesson {
    * @param {Object} data - DB record which contains lesson info
    */
   constructor (data = {}) {
+    if (data.fullref === undefined) {
+      throw new TypeError('fullref required')
+    }
     if (data.fullref in this.constructor.cache) {
       return this.constructor.cache[data.fullref]
     }
-    // just for debugging convenience
-    if (data.fullref) {
-      this.constructor.cache[data.fullref] = this
-    }
+    this.constructor.cache[data.fullref] = this
     this.constructor.PROPERTIES.forEach(k => {
       // db will return null for empty values
       this[k] = data[k] || undefined
@@ -36,7 +36,7 @@ class Lesson {
           throw new TypeError('bsid must be integer')
         }
         return new Promise(resolve => {
-          db_lesson.transaction('lesson').objectStore('lesson')
+          db.transaction('lesson').objectStore('lesson')
             .index('bsid').get(bsid).onsuccess = event => {
               if (event.target.result) {
                 // bsid found in db
@@ -44,7 +44,7 @@ class Lesson {
               } else {
                 // remote fetch
                 if (!(bsid in this.queueBsid)) {
-                  this.queueBsid[bsid] = this.converters.bsid2fullref(bsid)
+                  this.queueBsid[bsid] = this.bsid2fullref(bsid)
                     .then(fullref => {
                       delete this.queueBsid[bsid]
                       return this.from(fullref, {bsid: bsid})
@@ -72,7 +72,7 @@ class Lesson {
           if (fullref in this.cache) {
             return resolve(this.cache[fullref])
           }
-          db_lesson.transaction('lesson').objectStore('lesson')
+          db.transaction('lesson').objectStore('lesson')
             .get(fullref).onsuccess = event => {
               if (event.target.result) {
                 // fullref found in db
@@ -135,7 +135,7 @@ class Lesson {
     if (isUpdated && !noStore) {
       // updated, save lesson info
       return new Promise(resolve => {
-        db_lesson.transaction(['lesson'], 'readwrite').objectStore('lesson')
+        db.transaction(['lesson'], 'readwrite').objectStore('lesson')
           .put(this).onsuccess = event => {
             loggerInit('lesson', this.fullref + ' stored')
             return resolve()
@@ -145,28 +145,6 @@ class Lesson {
       // not updated
       return Promise.resolve()
     }
-  }
-
-  static _isEntryIntersect (
-      [this_week_skip, this_week_start, this_week_end,
-        this_dow, this_lesson_start, this_lesson_end],
-      [other_week_skip, other_week_start, other_week_end,
-        other_dow, other_lesson_start, other_lesson_end]) {
-    if (this_dow != other_dow) {
-      return false
-    }
-    if (this_lesson_end <= other_lesson_start ||
-        other_lesson_end <= this_lesson_start) {
-      return false
-    }
-    if ((this_week_skip == 1 && other_week_skip == 2) ||
-        (this_week_skip == 2 && other_week_skip == 1)) {
-      return false
-    }
-    if (this_week_end <= other_week_start || other_week_end <= this_week_start) {
-      return false
-    }
-    return true
   }
 
   conflictsWith (other) {
@@ -179,8 +157,33 @@ class Lesson {
     if (!other.schedule) {
       throw new TypeError('other.schedule missing')
     }
-    return this.schedule.some(this_entry => other.schedule.some(other_entry =>
-      this.constructor._isEntryIntersect(this_entry, other_entry)))
+    let i = this.schedule.length
+    while (i--) {
+      let [this_week_skip, this_week_start, this_week_end,
+        this_dow, this_lesson_start, this_lesson_end] = this.schedule[i]
+      let j = other.schedule.length
+      while (j--) {
+        let [other_week_skip, other_week_start, other_week_end,
+          other_dow, other_lesson_start, other_lesson_end] = other.schedule[j]
+        if (this_dow != other_dow) {
+          continue
+        }
+        if (this_lesson_end <= other_lesson_start ||
+            other_lesson_end <= this_lesson_start) {
+          continue
+        }
+        if ((this_week_skip == 1 && other_week_skip == 2) ||
+            (this_week_skip == 2 && other_week_skip == 1)) {
+          continue
+        }
+        if (this_week_end <= other_week_start ||
+            other_week_end <= this_week_start) {
+          continue
+        }
+        return true
+      }
+    }
+    return false
   }
 
   remove () {
@@ -189,6 +192,53 @@ class Lesson {
     }
     return refetch(ELECT.remove(bsid), undefined, undefined, () => false)
       .then(() => window.dispatchEvent(new Event('login')))
+  }
+
+  /* helpers */
+  static bsid2fullref (bsid) {
+    return bsidQueue.push(() => refetch(ELECT.bsid(bsid))
+      .then(responseText).then(data => {
+        let match = data.match(/课号.*\r?\n(.*)/)
+        if (!match) {
+          throw new TypeError('no fullref in response')
+        }
+        return match[1].trim()
+      }))
+  }
+
+  static splitFullref (fullref) {
+    let result = fullref.match(/(\d{3})-\((.{11})\)(.{5})\((.{3})\)/)
+    result.shift()
+    // 001 2015-2016-1 XX101 ...
+    return result
+  }
+
+  static selectAll () {
+    return new Promise(resolve => {
+      db.transaction('lesson').objectStore('lesson')
+        .getAll().onsuccess = event => {
+          let result = {}
+          let l_record = event.target.result
+          let i = l_record.length
+          while (i--) {
+            let record = l_record[i]
+            let fullref_split = Lesson.converters.splitFullref(record.fullref)
+
+            let obj_semester = result[fullref_split[1]]
+            if (!obj_semester) {
+              result[fullref_split[1]] = {}
+              obj_semester = result[fullref_split[1]]
+            }
+            let obj_ref = obj_semester[fullref_split[2]]
+            if (!obj_ref) {
+              obj_semester[fullref_split[2]] = {}
+              obj_ref = obj_semester[fullref_split[2]]
+            }
+            obj_ref[fullref_split[0]] = record
+          }
+          return resolve(result)
+        }
+    })
   }
 }
 
@@ -246,10 +296,10 @@ Block
     }
 
 Entry
-  = '星期' str_dow:[日一二三四五六] ' '+ '第' raw_lesson_start:Integer '节--第' lesson_end:Integer '节' _
+  = '星期' str_dow:[一二三四五六日] ' '+ '第' raw_lesson_start:Integer '节--第' lesson_end:Integer '节' _
     l_teacher:Teacher+
     {
-      let dow = '日一二三四五六'.indexOf(str_dow)
+      let dow = ' 一二三四五六日'.indexOf(str_dow)
       let lesson_start = raw_lesson_start - 1
       return l_teacher.map(([raw_week_start, raw_week_end]) =>
         [raw_week_start, raw_week_end, dow, lesson_start, lesson_end])
@@ -293,50 +343,3 @@ Lesson.PROPERTIES.unshift('bsid')
 Lesson.PROPERTIES.push('schedule')
 Lesson.cache = {}
 Lesson.queueBsid = {}
-Lesson.converters = {
-  bsid2fullref (bsid) {
-    return bsidQueue.push(() => refetch(ELECT.bsid(bsid))
-      .then(response => response.text()).then(data => {
-        let match = data.match(/课号.*\r?\n(.*)/)
-        if (!match) {
-          throw new TypeError('no fullref in response')
-        }
-        return match[1].trim()
-      }))
-  },
-
-  splitFullref (fullref) {
-    let result = fullref.match(/(\d{3})-\((.{11})\)(.{5})\((.{3})\)/)
-    result.shift()
-    // 001 2015-2016-1 XX101 ...
-    return result
-  },
-
-  selectAll () {
-    return new Promise(resolve => {
-      db_lesson.transaction('lesson').objectStore('lesson')
-        .getAll().onsuccess = event => {
-          let result = {}
-          let l_record = event.target.result
-          let i = l_record.length
-          while (i--) {
-            let record = l_record[i]
-            let fullref_split = Lesson.converters.splitFullref(record.fullref)
-
-            let obj_semester = result[fullref_split[1]]
-            if (!obj_semester) {
-              result[fullref_split[1]] = {}
-              obj_semester = result[fullref_split[1]]
-            }
-            let obj_ref = obj_semester[fullref_split[2]]
-            if (!obj_ref) {
-              obj_semester[fullref_split[2]] = {}
-              obj_ref = obj_semester[fullref_split[2]]
-            }
-            obj_ref[fullref_split[0]] = record
-          }
-          return resolve(result)
-        }
-    })
-  }
-}

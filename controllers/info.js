@@ -3,33 +3,54 @@ let sdtleft
 {
   class StuInfo {
     constructor (node) {
+      if (node === undefined) {
+        // quickInfo
+        let date = new Date()
+        let is_prev_year = date.getMonth() < 4 ||
+          (date.getMonth() == 5 && date.getDay() > 15) || date.getMonth() == 6
+
+        return new this.constructor({
+          year: date.getFullYear() - is_prev_year,
+          semester: is_prev_year + 1,
+        })
+      }
+
       if (node instanceof HTMLElement) {
         // parseInfo
         for (let key in this.constructor.INFO_MAPPER) {
           this[key] = node.querySelector(
             '#' + this.constructor.INFO_MAPPER[key]).innerText.trim()
         }
-        this.year = parseInt(this.year)
         this.semester = Number(this.semester)
       } else if (typeof node === 'object') {
         for (let key in this.constructor.INFO_MAPPER) {
           this[key] = node[key]
         }
       } else {
-        for (let key in this.constructor.INFO_MAPPER) {
-          this[key] = undefined
-        }
-        // quickInfo
-        let date = new Date()
-        let is_prev_year = date.getMonth() < 4 ||
-          (date.getMonth() == 5 && date.getDay() > 15) || date.getMonth() == 6
-        this.semester = is_prev_year + 1
-        this.year = date.getFullYear() - is_prev_year
+        throw TypeError('unknown node type ' + typeof node)
+      }
+
+      return new Proxy(this, this.constructor.handler)
+    }
+
+    get year () {
+      if (isNaN(this._year)) {
+        return ''
+      } else {
+        return this._year + '-' + (this._year + 1)
       }
     }
 
-    get yearString () {
-      return this.year + '-' + (this.year + 1)
+    set year (value) {
+      this._year = parseInt(value)
+    }
+
+    get absSemester () {
+      return this.toString()
+    }
+
+    toString() {
+      return this.year + '-' + this.semester
     }
 
     isValid () {
@@ -46,7 +67,7 @@ let sdtleft
       if (result.semester === 1) {
         result.semester = 2
       } else {
-        result.year++
+        result._year++
         result.semester = 1
       }
       return result
@@ -55,7 +76,7 @@ let sdtleft
     get prev () {
       let result = new this.constructor(this)
       if (result.semester === 1) {
-        result.year--
+        result._year--
         result.semester = 2
       } else {
         result.semester = 1
@@ -69,6 +90,14 @@ let sdtleft
     'major': 'lblZy',
     'year': 'lblXn',
     'semester': 'lblXq',
+  }
+  StuInfo.handler = {
+    enumerate (target, key) {
+      return Object.keys(StuInfo.INFO_MAPPER)
+    },
+    ownKeys (target, key) {
+      return Object.keys(StuInfo.INFO_MAPPER)
+    },
   }
 
   sdtleft = {
@@ -97,6 +126,9 @@ let sdtleft
         this._info = new StuInfo(this.node)
       }
       return this._info
+    },
+    set info (data) {
+      this._info = new StuInfo(data)
     },
 
     _menu: undefined,

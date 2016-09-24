@@ -4,6 +4,12 @@ let dataTable_arrange
 {
   const SUBMIT_ALERT_CLOSE_DELAY = 1500
 
+  let template = document.createElement('template')
+  template.innerHTML = `
+<button type="button" class="btn btn-default btn-refresh spinning-onhover" title="Refresh">
+<span class="glyphicon glyphicon-refresh"></span>
+</button>`
+  let btn_refresh = template.content.firstElementChild
 
   deferredPool.tasks.datatable = deferredPool.start.then(() => {
     const DATATABLE_LANGUAGE_URL =
@@ -75,7 +81,7 @@ let dataTable_arrange
         select_semester, div_available_header.firstElementChild)
     } else {
       // refresh button for available
-      let btn_available_refresh = refreshButton()
+      let btn_available_refresh = btn_refresh.cloneNode(true)
       btn_available_refresh.addEventListener(
         'click', refreshAvailable.bind(undefined, true))
       div_available_header.insertBefore(
@@ -169,7 +175,7 @@ let dataTable_arrange
     if (!window.location.hash.startsWith('#list')) {
       let div_arrange_header = document.getElementById('table-arrange_filter')
       // refresh button for arrange
-      let btn_refresh_arrange = refreshButton()
+      let btn_refresh_arrange = btn_refresh.cloneNode(true)
       btn_refresh_arrange.addEventListener('click', () => {})
       div_arrange_header.insertBefore(
         btn_refresh_arrange, div_arrange_header.firstElementChild)
@@ -195,15 +201,6 @@ let dataTable_arrange
     dataTable_arrange.rows.add(Object.values(arrangeTab.entries))
     dataTable_arrange.draw()
     $arrange_modal.modal()
-  }
-
-  function refreshButton () {
-    let template = document.createElement('template')
-    template.innerHTML = `
-<button type="button" class="btn btn-default btn-refresh spinning-onhover" title="Refresh">
-  <span class="glyphicon glyphicon-refresh"></span>
-</button>`
-    return template.content.firstElementChild
   }
 }
 

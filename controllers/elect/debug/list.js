@@ -21,16 +21,15 @@
   this.setupList = function setupList () {
     window.selectedType = () => [[]]
     window.dispatchEvent(new Event('login'))
-    deferredPool.tasks.storage_lesson
-      .then(() => Lesson.converters.selectAll()).then(result => {
-        let select_semester = document.getElementById('table-available-semester')
-        Object.keys(result).forEach(semester => {
-          let option = document.createElement('option')
-          option.value = semester
-          option.text = semester
-          select_semester.add(option)
-        })
+    deferredPool.tasks.storage_lesson.then(Lesson.selectAll).then(result => {
+      let select_semester = document.getElementById('table-available-semester')
+      Object.keys(result).forEach(semester => {
+        let option = document.createElement('option')
+        option.value = semester
+        option.text = semester
+        select_semester.add(option)
       })
+    })
     return preMain()
   }
 }

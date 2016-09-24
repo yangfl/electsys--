@@ -55,9 +55,7 @@ function initSyncStorage () {
 function initLocalStorage () {
   return new Promise(function (resolve, reject) {
     let l_promise = [
-      new Promise(function (resolve, reject) {
-        chrome.storage.local.clear(resolve)
-      })
+      new Promise(resolve => chrome.storage.local.clear(resolve))
     ]
     indexedDB.webkitGetDatabaseNames().onsuccess = function (sender, args) {
       let r = sender.target.result

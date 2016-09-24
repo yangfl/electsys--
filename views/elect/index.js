@@ -123,7 +123,7 @@ function postLogin (loginSuccessful) {
           return loggerError('init.info', 'sdtleft.info invalid', true)
             (sdtleft.info)
         }
-      }, loggerError('init.info', true)).then(initTabCacheDatabase),
+      }, loggerError('init.info', true)).then(initDatabase),
     ]).then(preMain, () => {}) // catch promise rejection
   } else {
     loggerInit('init.login', 'login canceled by user', 'warn')

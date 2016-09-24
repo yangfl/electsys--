@@ -30,7 +30,7 @@
         }
       } else if (event.target.nodeName === 'A') {
         // remove lesson when click a
-        // Lesson.from(Number(event.target.dataset.bsid)).then(l => l.remove())
+        Lesson.from(Number(event.target.dataset.bsid)).then(l => l.remove())
         // prevent redirect
         event.preventDefault()
       }
@@ -44,10 +44,32 @@ let scheduleTable
   const div_schedule = document.getElementById('container-schedule')
 
   scheduleTable = {
+    _node: undefined,
     generate () {
-      let div = document.createElement('div')
-      div.innerHTML = getEmptyScheduletable()
-      return div.firstElementChild
+      if (table_schedule === undefined) {
+        let table_schedule = '<table id="table-schedule"><thead>'
+        table_schedule += '<tr>'
+        for (let i_dow = 0; i_dow < 8; i_dow++) {
+          table_schedule += '<th>'
+          table_schedule += chrome.i18n.getMessage('scheduletable_' + i_dow)
+          table_schedule += '</th>'
+        }
+        table_schedule += '</tr></thead><tbody>'
+        for (let i_lesson = 1; i_lesson <= 14; i_lesson++) {
+          table_schedule += '<tr><th>'
+          table_schedule += i_lesson
+          table_schedule += '</th>'
+          for (let i_dow = 0; i_dow < 7; i_dow++) {
+            table_schedule += '<td></td>'
+          }
+          table_schedule += '</tr>'
+        }
+        table_schedule += '</tbody></table>'
+        let div = document.createElement('div')
+        div.innerHTML = table_schedule
+        scheduleTable._node = div.firstElementChild
+      }
+      return scheduleTable._node.cloneNode(true)
     },
 
     preview: {
@@ -58,6 +80,9 @@ let scheduleTable
           l_preview.remove()
         }
       },
+
+      draw (lesson) {
+      },
     },
 
     show (table = scheduleTable.generate()) {
@@ -67,31 +92,7 @@ let scheduleTable
       }
       // append new
       div_schedule.appendChild(table)
-    }
-  }
-
-  let table_schedule
-  function getEmptyScheduletable () {
-    if (table_schedule === undefined) {
-      table_schedule = '<table id="table-schedule"><thead>'
-      table_schedule += '<tr>'
-      for (let i_dow = 0; i_dow < 8; i_dow++) {
-        table_schedule += '<th>'
-        table_schedule += chrome.i18n.getMessage('scheduletable_' + i_dow)
-        table_schedule += '</th>'
-      }
-      table_schedule += '</tr></thead><tbody>'
-      for (let i_lesson = 1; i_lesson <= 14; i_lesson++) {
-        table_schedule += '<tr><th>'
-        table_schedule += i_lesson
-        table_schedule += '</th>'
-        for (let i_dow = 0; i_dow < 7; i_dow++) {
-          table_schedule += '<td></td>'
-        }
-        table_schedule += '</tr>'
-      }
-      table_schedule += '</tbody></table>'
-    }
+    },
   }
 }
 

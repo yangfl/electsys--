@@ -17,8 +17,7 @@ let rootTab
 
     _preload () {
       return new Promise(resolve => {
-        db_tab.transaction(cur_tab_store_name)
-          .objectStore(cur_tab_store_name).index('from').get(typeDesc)
+        db.transaction('tab').objectStore('tab').index('from').get(typeDesc)
           .onsuccess = event => {
             // TODO
             return resolve(this)

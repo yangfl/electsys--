@@ -1,8 +1,8 @@
 'use strict'
-function fetchArranges (
-    year = sdtleft.info.year, semester = sdtleft.info.semester, grade) {
-  return fetch(ELECTQ.report, {credentials: 'include'})
-    .then(handleResponseError).then(response => response.text()).then(data => {
+Lesson.fetch = (
+    year = sdtleft.info.year, semester = sdtleft.info.semester, grade) =>
+  fetch(ELECTQ.report, {credentials: 'include'})
+    .then(responseErrorText).then(function sendQuery (data) {
       let doc = new DOMParser().parseFromString(data, 'text/html')
       // select option
       for (let [key, value] of
@@ -27,16 +27,22 @@ function fetchArranges (
       form_data.push([button.name, button.value])
       // send query
       return fetch(ELECTQ.report, postOptions(form_data))
-    }).then(handleResponseError).then(response => response.text())
-    // download data
-    .then(data => fetch(ELECTQ.host + JSON.parse(
-      data.match(/new RSClientController\((.*)\)/)[1].split(',')[14]) + 'XML',
-      {credentials: 'include'})).then(handleResponseError)
-    .then(response => response.text()).then(parseArrangesXML)
-}
+    })
+    .then(responseErrorText).then(Lesson.fetch.requestDownload)
+    .then(responseErrorText).then(Lesson.fetch.parseArrangesXML)
 
 
-function parseArrangesXML (data) {
+Lesson.fetch.requestDownload = data => fetch(
+  ELECTQ.host + JSON.parse(
+    data.match(/new RSClientController\((.*)\)/)[1].split(',')[14]) + 'XML',
+  {credentials: 'include'})
+
+
+Lesson.fetch.fromUrl = url => fetch(url, {credentials: 'include'})
+  .then(responseErrorText).then(Lesson.fetch.parseArrangesXML)
+
+
+Lesson.fetch.parseArrangesXML = data => {
   let l_detail = new DOMParser().parseFromString(data, 'application/xml')
     .getElementsByTagName('Detail_Collection')[0].children
   let i = l_detail.length
@@ -57,20 +63,3 @@ function parseArrangesXML (data) {
   }
   return Promise.all(p)
 }
-
-
-var addArrange = arrange => {
-  if (d_arrange.has(arrange[FULLREF])) {
-    var old_arrange = d_arrange.get(arrange[FULLREF])
-    if (old_arrange[RAWSCHEDULE] != arrange[RAWSCHEDULE]) {
-      console.warn(old_arrange, arrange) }}
-  d_arrange.set(arrange[FULLREF], arrange)
-  var l_schedule = []
-  if (!arrange[RAWSCHEDULE].includes('不安排教室')) {
-    try {
-      schedule_parser.parse(arrange[RAWSCHEDULE] + '\n')
-        .map(fixWeekSkip).forEach(l_schedule.add.bind(l_schedule)) }
-    catch (e) {
-      console.error(arrange)
-      throw e }}
-  obj_lesson_schedule[arrange[FULLREF]] = l_schedule }

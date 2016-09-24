@@ -3,12 +3,15 @@ let config
 {
   config = {
     init () {
-      chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'sync') {
+      chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName === 'sync') {
+          let item = {}
           for (let key in changes) {
-            changes[key] = changes[key].newValue
+            if ('newValue' in changes[key]) {
+              item[key] = changes[key].newValue
+            }
           }
-          this.loaders.forEach(loader => loader(changes))
+          this.loaders.forEach(loader => loader(item))
         }
       })
       this.bind()
@@ -16,8 +19,12 @@ let config
     },
 
     load () {
-      return new Promise(resolve => chrome.storage.sync.get(item => {
-        this.loaders.forEach(loader => loader(item))
+      return new Promise((resolve, reject) => chrome.storage.sync.get(item => {
+        try {
+          this.loaders.forEach(loader => loader(item, true))
+        } catch (e) {
+          return reject(e)
+        }
         return resolve()
       }))
     },
@@ -49,36 +56,39 @@ let config
     },
 
     loaders: [
-      item => {
-        for (let key in item) {
-          setConfigDom(document.getElementById(key), item[key])
+      (item, hasAll) => {
+        let l_node = document.getElementsByClassName('config-sync')
+        let i = l_node.length
+        while (i--) {
+          let node = l_node[i]
+          if (node.type === 'checkbox') {
+            if (hasAll || node.id in item) {
+              $(node).bootstrapSwitch('state', item[node.id] || false)
+            }
+            continue
+          }
+          if (!(node.id in item)) {
+            continue
+          }
+          switch (node.type) {
+            case 'number':
+              node.value = item[node.id] || 0
+              break
+            default:
+              if (node.classList.contains('config-list')) {
+                node.value = item[node.id].join(', ')
+              } else {
+                node.value = item[node.id] || ''
+              }
+              if (node.classList.contains('config-color')) {
+                node.style.backgroundColor = node.value
+              }
+          }
         }
       },
     ],
   }
 
-  function setConfigDom (input, value) {
-    if (!input) {
-      return
-    }
-    switch (input.type) {
-      case 'checkbox':
-        $(input).bootstrapSwitch('state', value)
-        break
-      case 'number':
-        input.value = value || 0
-        break
-      default:
-        if (input.classList.contains('config-list')) {
-          input.value = value.join(', ')
-        } else {
-          input.value = value || ''
-        }
-        if (input.classList.contains('config-color')) {
-          input.style.backgroundColor = input.value
-        }
-    }
-  }
 
   function saveNumber () {
     config.set(this.id, Number(this.value))

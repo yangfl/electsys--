@@ -15,6 +15,8 @@ config.loaders.push(item => {
           item.ajax_post_interval : item.ajax_get_interval,
         item.ajax_power, item.ajax_retry),
     }
+  } else {
+    throw new TypeError('broken settings')
   }
   if (typeof item.ajax_get_interval === 'number') {
     bsidQueue.defaultOptions = {

@@ -1,5 +1,5 @@
 'use strict'
-class HttpError extends Error {
+class HttpError extends TypeError {
   constructor (message) {
     super(message)
     this.name = 'HttpError'
@@ -12,6 +12,17 @@ function handleResponseError (response) {
     throw new HttpError(response.statusText)
   }
   return response
+}
+
+
+function responseText (response) {
+  return response.text()
+}
+
+
+function responseErrorText (response) {
+  handleResponseError(response)
+  return response.text()
 }
 
 
@@ -37,7 +48,7 @@ function steppingTicker (delay = 0, power = 1, maxRetry = 3) {
   let retry = 0
   return error => {
     retry++
-    if (retry === maxRetry || !(error instanceof TypeError)) {
+    if (retry === maxRetry || error instanceof LogoutError) {
       // give up
       return false
     } else {
@@ -54,7 +65,15 @@ function steppingTicker (delay = 0, power = 1, maxRetry = 3) {
 }
 
 
-class LogoutError extends Error {
+class ElectError extends TypeError {
+  constructor (message) {
+    super(message)
+    this.name = 'ElectError'
+  }
+}
+
+
+class LogoutError extends ElectError {
   constructor (message = 'Logout') {
     super(message)
     this.name = 'LogoutError'
@@ -63,20 +82,13 @@ class LogoutError extends Error {
 }
 
 
-function pageValidator (data) {
-  if (data.includes('请勿频繁刷新本页面')) {
-    return false
-  }
-  if (data.includes('<title>请重新登录</title>')) {
-    throw new LogoutError
-  }
-  return true
-}
-
-
 function pageFilter (response) {
   if (response.url.endsWith('outTimePage.aspx')) {
     throw new LogoutError
   }
-  return response.text().then(pageValidator)
+  if (response.url.includes('messagePage.aspx')) {
+    throw new ElectError(
+      decodeURIComponent(response.url.substr(response.url.indexOf('=') + 1)))
+  }
+  return true
 }
