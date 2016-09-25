@@ -101,7 +101,7 @@ class Lesson {
 
   _parse () {
     try {
-      this.schedule = this.scheduleParser.parse(this.scheduleDesc)
+      this.schedule = this.constructor.scheduleParser.parse(this.scheduleDesc)
     } catch (e) {
       console.warn(this.scheduleDesc.replace(/\r/g, '\\r'))
       throw e
@@ -158,10 +158,11 @@ class Lesson {
       throw new TypeError('other.schedule missing')
     }
     let i = this.schedule.length
+    let k = other.schedule.length
     while (i--) {
       let [this_week_skip, this_week_start, this_week_end,
         this_dow, this_lesson_start, this_lesson_end] = this.schedule[i]
-      let j = other.schedule.length
+      let j = k
       while (j--) {
         let [other_week_skip, other_week_start, other_week_end,
           other_dow, other_lesson_start, other_lesson_end] = other.schedule[j]

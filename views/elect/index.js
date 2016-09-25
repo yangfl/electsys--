@@ -54,6 +54,7 @@ function preDebug () {
   document.getElementById('init-debug').style.display = 'block'
   document.getElementById('confirm-debug')
     .addEventListener('click', () => setupDebug())
+  document.getElementById('clear-cache').addEventListener('click', clearCache)
   deferredPool.start.resolve()
 }
 /* debug */

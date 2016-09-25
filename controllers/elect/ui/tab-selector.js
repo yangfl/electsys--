@@ -19,16 +19,21 @@ function nodeTypeDesc (node) {
 
 
 function selectedType () {
-  let selectors = ['.btn-type.btn-info']
-  if (document.getElementById('btn-limited').classList.contains('btn-info')) {
-    selectors.push('#select-limited tr.row-selected')
+  if (window.location.hash.startsWith('#list')) {
+    let select_semester = document.getElementById('table-available-semester')
+    return [[select_semester.options[select_semester.selectedIndex].value]]
+  } else {
+    let selectors = ['.btn-type.btn-info']
+    if (document.getElementById('btn-limited').classList.contains('btn-info')) {
+      selectors.push('#select-limited tr.row-selected')
+    }
+    if (document.getElementById('btn-out').classList.contains('btn-info')) {
+      selectors.push('#select-out li')
+    }
+    // [].toString happens to generate valid css selector
+    return Array.prototype.map.call(
+      document.querySelectorAll(selectors.toString()), nodeTypeDesc)
   }
-  if (document.getElementById('btn-out').classList.contains('btn-info')) {
-    selectors.push('#select-out li')
-  }
-  // [].toString happens to generate valid css selector
-  return Array.prototype.map.call(
-    document.querySelectorAll(selectors.toString()), nodeTypeDesc)
 }
 
 

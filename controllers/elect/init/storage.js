@@ -1,70 +1,82 @@
 'use strict'
-let db
-function initDatabase () {
-  return new Promise((resolve, reject) => {
-    let request = indexedDB.open(sdtleft.info.toString())
-
-    request.onerror = function (event) {
-      return reject(event.target.error)
+let db = {
+  init (_absSemester) {
+    let absSemester = _absSemester
+    let absSemesterSet = true
+    if (_absSemester === undefined) {
+      absSemester = sdtleft.info.toString()
+      absSemesterSet = false
     }
 
-    request.onupgradeneeded = function (event) {
-      db = this.result
-      db.onerror = function (event) {
-        loggerError('init.storage')(event.target.error)
+    return new Promise((resolve, reject) => {
+      let request = indexedDB.open(absSemester)
+
+      request.onerror = function (event) {
+        return reject(event.target.error)
       }
 
-      let store_lesson = db.createObjectStore('lesson', {keyPath: 'fullref'})
-      store_lesson.createIndex('bsid', 'bsid', { unique: true })
+      request.onupgradeneeded = function (event) {
+        db = this.result
+        db.onerror = function (event) {
+          loggerError('init.storage')(event.target.error)
+        }
 
-      let store_tab = db.createObjectStore('tab', { autoIncrement: true })
-      store_tab.createIndex('from', 'from')
-      store_tab.createIndex('to', 'to')
-      loggerInit('init.storage', 'database \'' + sdtleft.info + '\' created')
-    }
+        let store_lesson = db.createObjectStore('lesson', {keyPath: 'fullref'})
+        store_lesson.createIndex('bsid', 'bsid', { unique: true })
 
-    request.onsuccess = function (event) {
-      db = this.result
-      db.onerror = function (event) {
-        loggerError('init.storage')(event.target.error)
-      }
-
-      if (!db.objectStoreNames.contains('lesson')) {
-        loggerInit('init.storage',
-          'Broken database: no objectStore \'lesson\'', 'error')
-        return reject()
-      }
-      if (!db.transaction('lesson').objectStore('lesson')
-          .indexNames.contains('bsid')) {
-        loggerInit('init.storage',
-          'Broken database: index \'bsid\' missing on objectStore \'lesson\'',
-          'error')
-        return reject()
+        let store_tab = db.createObjectStore('tab', { autoIncrement: true })
+        store_tab.createIndex('from', 'from')
+        store_tab.createIndex('to', 'to')
+        loggerInit('init.storage', 'database \'' + sdtleft.info + '\' created')
       }
 
-      if (!db.objectStoreNames.contains('tab')) {
-        loggerInit('init.storage',
-          'Broken database: no objectStore \'tab\'', 'error')
-        return reject()
+      request.onsuccess = function (event) {
+        db = this.result
+        db.onerror = function (event) {
+          loggerError('init.storage')(event.target.error)
+        }
+
+        if (!db.objectStoreNames.contains('lesson')) {
+          loggerInit('init.storage',
+            'Broken database: no objectStore \'lesson\'', 'error')
+          return reject()
+        }
+        if (!db.transaction('lesson').objectStore('lesson')
+            .indexNames.contains('bsid')) {
+          loggerInit('init.storage',
+            'Broken database: index \'bsid\' missing on objectStore \'lesson\'',
+            'error')
+          return reject()
+        }
+
+        if (!db.objectStoreNames.contains('tab')) {
+          loggerInit('init.storage',
+            'Broken database: no objectStore \'tab\'', 'error')
+          return reject()
+        }
+        if (!db.transaction('tab').objectStore('tab')
+            .indexNames.contains('from')) {
+          loggerInit('init.storage',
+            'Broken database: index \'from\' missing on objectStore \'tab\'',
+            'error')
+          return reject()
+        }
+        if (!db.transaction('tab').objectStore('tab')
+            .indexNames.contains('to')) {
+          loggerInit('init.storage',
+            'Broken database: index \'to\' missing on objectStore \'tab\'',
+            'error')
+          return reject()
+        }
+        return resolve()
       }
-      if (!db.transaction('tab').objectStore('tab')
-          .indexNames.contains('from')) {
-        loggerInit('init.storage',
-          'Broken database: index \'from\' missing on objectStore \'tab\'',
-          'error')
-        return reject()
-      }
-      if (!db.transaction('tab').objectStore('tab')
-          .indexNames.contains('to')) {
-        loggerInit('init.storage',
-          'Broken database: index \'to\' missing on objectStore \'tab\'',
-          'error')
-        return reject()
-      }
-      return resolve()
-    }
-  })
-  .then(
-    () => loggerInit('init.storage', 'database ready'),
-    loggerError('init.storage', 'Database error during opening', true))
+    })
+    .then(
+      () => loggerInit('init.storage',
+        'database \'' + absSemester + '\' ready'),
+      loggerError('init.storage',
+        'database \'' + absSemester + '\'error during opening', true))
+  },
+
+  cur: undefined,
 }

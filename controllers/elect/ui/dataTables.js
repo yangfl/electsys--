@@ -74,9 +74,8 @@ let dataTable_arrange
       let select_semester = document.createElement('select')
       select_semester.id = 'table-available-semester'
       select_semester.classList.add('form-control')
-      select_semester.addEventListener('change', function (event) {
-        this.options[this.selectedIndex]
-      })
+      select_semester.addEventListener(
+        'change', refreshAvailable.bind(undefined, false))
       div_available_header.insertBefore(
         select_semester, div_available_header.firstElementChild)
     } else {
