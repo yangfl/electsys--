@@ -9,20 +9,25 @@ class Lesson {
     if (data.fullref === undefined) {
       throw new TypeError('fullref required')
     }
+
     if (data.fullref in this.constructor.cache) {
       return this.constructor.cache[data.fullref]
     }
     this.constructor.cache[data.fullref] = this
-    this.constructor.PROPERTIES.forEach(k => {
+
+    for (let i = 0, k = this.constructor.PROPERTIES.length; i < k; i++) {
+      let property = this.constructor.PROPERTIES[i]
       // db will return null for empty values
-      this[k] = data[k] || undefined
-    })
-    // warn for bsid-fullref pair
-    if (this.schedule === undefined) {
-      loggerInit('lesson', this.fullref +
-        ' schedule unknown, confilct detection unreliable',
-        'warn', true)
+      this[property] = data[property] || undefined
     }
+  }
+
+  get absSemester () {
+    return this.constructor.splitFullref(this.fullref)[1]
+  }
+
+  get ref () {
+    return this.constructor.splitFullref(this.fullref)[2]
   }
 
   static from (token, _data) {
@@ -36,7 +41,7 @@ class Lesson {
           throw new TypeError('bsid must be integer')
         }
         return new Promise(resolve => {
-          db.transaction('lesson').objectStore('lesson')
+          db_lesson.transaction('lesson').objectStore('lesson')
             .index('bsid').get(bsid).onsuccess = event => {
               if (event.target.result) {
                 // bsid found in db
@@ -68,25 +73,27 @@ class Lesson {
       case 'string':
         fullref = token
         data = _data
-        p = new Promise((resolve, reject) => {
-          if (fullref in this.cache) {
-            return resolve(this.cache[fullref])
-          }
-          db.transaction('lesson').objectStore('lesson')
-            .get(fullref).onsuccess = event => {
-              if (event.target.result) {
-                // fullref found in db
-                return resolve(new Lesson(event.target.result))
-              } else if (data) {
-                // create new
-                return resolve(new Lesson({fullref: fullref}))
-              } else {
-                return reject(new RangeError(`fullref ${fullref} unknown`))
+        let p
+        if (fullref in this.cache) {
+          p = Promise.resolve(this.cache[fullref])
+        } else {
+          p = new Promise((resolve, reject) => {
+            db_lesson.transaction('lesson').objectStore('lesson')
+              .get(fullref).onsuccess = event => {
+                if (event.target.result) {
+                  // fullref found in db
+                  return resolve(new Lesson(event.target.result))
+                } else if (data) {
+                  // create new
+                  return resolve(new Lesson({fullref: fullref}))
+                } else {
+                  return reject(new RangeError(`fullref ${fullref} unknown`))
+                }
               }
-            }
-        })
+          })
+        }
         if (data) {
-          p.then(l => {
+          p = p.then(l => {
             l.update(data)
             return l
           })
@@ -116,14 +123,18 @@ class Lesson {
          `fullref mismatched, except '${this.fullref}', got '${data.fullref}'`)
       } */
       // detect update event
-      this.constructor.PROPERTIES.forEach(k => {
-        if (this[k] === undefined && data[k]) {
+      for (let i = 0, k = this.constructor.PROPERTIES.length; i < k; i++) {
+        let property = this.constructor.PROPERTIES[i]
+        if (this[property] === undefined && data[property]) {
           isUpdated = true
-          this[k] = data[k]
-        } else if (data[k] !== undefined && this[k] !== data[k]) {
-          console.warn('property %s:', k, this[k], 'confilcts with', data[k])
+          this[property] = data[property]
+        } else if (data[property] !== undefined &&
+            this[property] !== data[property]) {
+          console.warn(
+            'property %s:', property, this[property],
+            'confilcts with', data[property])
         }
-      })
+      }
     }
 
     // try to parse schedule
@@ -135,7 +146,7 @@ class Lesson {
     if (isUpdated && !noStore) {
       // updated, save lesson info
       return new Promise(resolve => {
-        db.transaction(['lesson'], 'readwrite').objectStore('lesson')
+        db_lesson.transaction(['lesson'], 'readwrite').objectStore('lesson')
           .put(this).onsuccess = event => {
             loggerInit('lesson', this.fullref + ' stored')
             return resolve()
@@ -208,15 +219,15 @@ class Lesson {
   }
 
   static splitFullref (fullref) {
-    let result = fullref.match(/(\d{3})-\((.{11})\)(.{5})\((.{3})\)/)
+    let result = fullref.match(/^(\d{3})-\((.{11})\)(.{5})\((.{3})\)$/)
     result.shift()
     // 001 2015-2016-1 XX101 ...
     return result
   }
 
-  static selectAll () {
+  static selectAll (absSemester) {
     return new Promise(resolve => {
-      db.transaction('lesson').objectStore('lesson')
+      db_lesson.transaction('lesson').objectStore('lesson')
         .getAll().onsuccess = event => {
           let result = {}
           let l_record = event.target.result

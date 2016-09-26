@@ -46,7 +46,7 @@ let scheduleTable
   scheduleTable = {
     _node: undefined,
     generate () {
-      if (table_schedule === undefined) {
+      if (scheduleTable._node === undefined) {
         let table_schedule = '<table id="table-schedule"><thead>'
         table_schedule += '<tr>'
         for (let i_dow = 0; i_dow < 8; i_dow++) {

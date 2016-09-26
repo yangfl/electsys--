@@ -228,7 +228,9 @@ function refreshAvailable (reload) {
   })).then(l_tab => {
     // selectedType can be empty
     if (l_tab.length) {
-      scheduleTable.show(l_tab[l_tab.length - 1].scheduleTable)
+      let last_tab = l_tab[l_tab.length - 1]
+      scheduleTable.show(last_tab.scheduleTable)
+      selectedLesson.fromBsid(last_tab.bsids)
     }
     dataTable_available.draw()
   })

@@ -11,6 +11,8 @@ function toggleDebug () {
 
 
 function clearCache () {
+  db_lesson.close()
+  db_tab.close()
   indexedDB.webkitGetDatabaseNames().onsuccess = (sender, args) => {
     let r = sender.target.result
     let i = r.length
@@ -44,6 +46,7 @@ function setupDebug (year = sdtleft.info.year, semester = sdtleft.info.semester,
       year: year,
       semester: semester,
     }
+    sdtleft.loaded.resolve()
     ELECT.host = host
     stage = [1, 1]
 
@@ -59,6 +62,6 @@ function setupDebug (year = sdtleft.info.year, semester = sdtleft.info.semester,
 
     loggerInit('debug', 'Debug mode', 'warn')
     window.dispatchEvent(new Event('login'))
-    return initDatabase().then(preMain)
+    return preMain()
   })
 }

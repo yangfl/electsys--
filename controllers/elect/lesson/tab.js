@@ -17,8 +17,9 @@ let rootTab
 
     _preload () {
       return new Promise(resolve => {
-        db.cur.transaction('tab').objectStore('tab').index('from').get(typeDesc)
-          .onsuccess = event => {
+        let absSemester = sdtleft.info.toString()
+        db_tab.transaction(absSemester).objectStore(absSemester)
+          .index('from').get(typeDesc).onsuccess = event => {
             // TODO
             return resolve(this)
           }

@@ -21,7 +21,7 @@
   this.setupList = function setupList () {
     window.selectedType = () => [[]]
     window.dispatchEvent(new Event('login'))
-    deferredPool.tasks.storage_lesson.then(Lesson.selectAll).then(result => {
+    Lesson.selectAll().then(result => {
       let select_semester = document.getElementById('table-available-semester')
       Object.keys(result).forEach(semester => {
         let option = document.createElement('option')

@@ -1,82 +1,116 @@
 'use strict'
-let db = {
-  init (_absSemester) {
-    let absSemester = _absSemester
-    let absSemesterSet = true
-    if (_absSemester === undefined) {
-      absSemester = sdtleft.info.toString()
-      absSemesterSet = false
+let db_lesson
+deferredPool.tasks.storage_lesson = deferredPool.start
+  .then(() => new Promise((resolve, reject) => {
+    let request_lesson = indexedDB.open('LessonInfoDatabase')
+
+    request_lesson.onerror = event => reject(event.target.error)
+
+    request_lesson.onupgradeneeded = event => {
+      db_lesson = event.target.result
+
+      if (!db_lesson.objectStoreNames.contains('lesson')) {
+        let store = db_lesson.createObjectStore('lesson', {keyPath: 'fullref'})
+        store.createIndex('bsid', 'bsid', { unique: true })
+        loggerInit('init.storage.lesson', 'objectStore \'lesson\' created')
+      }
     }
 
-    return new Promise((resolve, reject) => {
-      let request = indexedDB.open(absSemester)
-
-      request.onerror = function (event) {
-        return reject(event.target.error)
+    request_lesson.onsuccess = event => {
+      db_lesson = event.target.result
+      db_lesson.onerror = function (event) {
+        loggerError('init.storage.lesson')(event.target.error)
       }
-
-      request.onupgradeneeded = function (event) {
-        db = this.result
-        db.onerror = function (event) {
-          loggerError('init.storage')(event.target.error)
-        }
-
-        let store_lesson = db.createObjectStore('lesson', {keyPath: 'fullref'})
-        store_lesson.createIndex('bsid', 'bsid', { unique: true })
-
-        let store_tab = db.createObjectStore('tab', { autoIncrement: true })
-        store_tab.createIndex('from', 'from')
-        store_tab.createIndex('to', 'to')
-        loggerInit('init.storage', 'database \'' + sdtleft.info + '\' created')
+      if (!db_lesson.objectStoreNames.contains('lesson')) {
+        loggerInit('init.storage.lesson',
+          'Broken database: no objectStore \'lesson\'', 'error')
+        return reject()
       }
-
-      request.onsuccess = function (event) {
-        db = this.result
-        db.onerror = function (event) {
-          loggerError('init.storage')(event.target.error)
-        }
-
-        if (!db.objectStoreNames.contains('lesson')) {
-          loggerInit('init.storage',
-            'Broken database: no objectStore \'lesson\'', 'error')
-          return reject()
-        }
-        if (!db.transaction('lesson').objectStore('lesson')
-            .indexNames.contains('bsid')) {
-          loggerInit('init.storage',
-            'Broken database: index \'bsid\' missing on objectStore \'lesson\'',
-            'error')
-          return reject()
-        }
-
-        if (!db.objectStoreNames.contains('tab')) {
-          loggerInit('init.storage',
-            'Broken database: no objectStore \'tab\'', 'error')
-          return reject()
-        }
-        if (!db.transaction('tab').objectStore('tab')
-            .indexNames.contains('from')) {
-          loggerInit('init.storage',
-            'Broken database: index \'from\' missing on objectStore \'tab\'',
-            'error')
-          return reject()
-        }
-        if (!db.transaction('tab').objectStore('tab')
-            .indexNames.contains('to')) {
-          loggerInit('init.storage',
-            'Broken database: index \'to\' missing on objectStore \'tab\'',
-            'error')
-          return reject()
-        }
-        return resolve()
+      if (!db_lesson.transaction('lesson').objectStore('lesson')
+          .indexNames.contains('bsid')) {
+        loggerInit('init.storage.lesson',
+          'Broken database: index \'bsid\' missing on objectStore \'lesson\'',
+          'error')
+        return reject()
       }
-    })
-    .then(
-      () => loggerInit('init.storage',
-        'database \'' + absSemester + '\' ready'),
-      loggerError('init.storage',
-        'database \'' + absSemester + '\'error during opening', true))
-  },
+      return resolve()
+    }
+  }))
+  .then(
+    () => loggerInit('init.storage.lesson', 'database ready'),
+    loggerError('init.storage.lesson', 'Database error during opening', true))
 
-  cur: undefined,
-}
+
+let db_tab
+deferredPool.tasks.storage_tab = deferredPool.start
+  .then(() => new Promise((resolve, reject) => {
+    let request_tab = indexedDB.open('TabCacheDatabase')
+
+    request_tab.onerror = event => reject(event.target.error)
+
+    request_tab.onsuccess = event => {
+      try {
+        db_tab = event.target.result
+        db_tab.onerror = function (event) {
+          loggerError('init.storage.tab')(event.target.error)
+        }
+        return resolve(sdtleft.loaded)
+      } catch (e) {
+        return reject(e)
+      }
+    }
+  })).then(() => {
+    let absSemester = sdtleft.info.toString()
+    if (!db_tab.objectStoreNames.contains(absSemester)) {
+      return new Promise((resolve, reject) => {
+        db_tab.close()
+        let request_tab = indexedDB.open('TabCacheDatabase', db_tab.version + 1)
+
+        request_tab.onerror = event => reject(event.target.error)
+
+        request_tab.onupgradeneeded = event => {
+          db_tab = event.target.result
+
+          let store = db_tab.createObjectStore(
+            absSemester, { autoIncrement: true })
+          store.createIndex('from', 'from')
+          store.createIndex('to', 'to')
+          loggerInit('init.storage.tab', `objectStore '${absSemester}' created`)
+        }
+
+        request_tab.onsuccess = event => {
+          db_tab = event.target.result
+
+          db_tab.onerror = function (event) {
+            loggerError('init.storage.tab')(event.target.error)
+          }
+
+          if (!db_tab.objectStoreNames.contains(absSemester)) {
+            loggerInit('init.storage.tab',
+              `Broken database: no objectStore '${absSemester}'`,
+              'error')
+            return reject()
+          }
+
+          let store = db_tab.transaction(absSemester).objectStore(absSemester)
+          if (!store.indexNames.contains('from')) {
+            loggerInit('init.storage.tab',
+              `Broken database: index 'from' missing on objectStore '${absSemester}'`,
+              'error')
+            return reject()
+          }
+          if (!store.indexNames.contains('to')) {
+            loggerInit('init.storage.tab',
+              `Broken database: index 'to' missing on objectStore '${absSemester}'`,
+              'error')
+            return reject()
+          }
+
+          return resolve()
+        }
+      })
+    }
+  })
+  .then(
+    () => loggerInit('init.storage.tab', 'database ready'),
+    loggerError('init.storage.tab', 'database error during opening', true))

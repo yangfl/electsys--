@@ -104,20 +104,25 @@ let sdtleft
     url: 'http://electsys.sjtu.edu.cn/edu/student/sdtleft.aspx',
 
     node: undefined,
+    loaded: 'Deferred' in window ? new Deferred() : undefined,
     load (reload) {
-      if (this.node && !reload) {
-        return Promise.resolve(this)
-      } else {
+      if (reload || ('Deferred' in window ?
+            this.loaded instanceof Deferred : this.loaded === undefined)) {
         this._info = undefined
         this._menu = undefined
-        return fetch(this.url, {credentials: 'include'})
+        let loaded = this.loaded
+        this.loaded = fetch(this.url, {credentials: 'include'})
           .then(response => response.text()).then(data => {
             this.node = document.createElement('div')
             this.node.innerHTML = data.match(/<table[^]*<\/table>/i)[0]
               .replace(/src=/gi, 'tempsrc=')
+            if (loaded) {
+              loaded.resolve()
+            }
             return this
           })
       }
+      return this.loaded
     },
 
     _info: undefined,
