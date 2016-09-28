@@ -4,7 +4,7 @@ let stage
   stage = {
     async find () {
       for (let test_stage of ELECT.list.stage) {
-        loggerInit('elect_stage', 'trying ' + test_stage)
+        loggerInit('init.elect_stage', 'try ' + test_stage)
         if (await testElectConfirmPage(ELECT.stage(test_stage))) {
           let i = test_stage.length
           while (i--) {

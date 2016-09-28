@@ -75,7 +75,8 @@ deferredPool.tasks.storage_tab = deferredPool.start
             absSemester, { autoIncrement: true })
           store.createIndex('from', 'from')
           store.createIndex('to', 'to')
-          loggerInit('init.storage.tab', `objectStore '${absSemester}' created`)
+          loggerInit('init.storage.lesson',
+            'objectStore \'' + absSemester + '\' created')
         }
 
         request_tab.onsuccess = event => {
@@ -87,7 +88,7 @@ deferredPool.tasks.storage_tab = deferredPool.start
 
           if (!db_tab.objectStoreNames.contains(absSemester)) {
             loggerInit('init.storage.tab',
-              `Broken database: no objectStore '${absSemester}'`,
+              'Broken database: no objectStore \'' + absSemester + '\'',
               'error')
             return reject()
           }
@@ -95,13 +96,15 @@ deferredPool.tasks.storage_tab = deferredPool.start
           let store = db_tab.transaction(absSemester).objectStore(absSemester)
           if (!store.indexNames.contains('from')) {
             loggerInit('init.storage.tab',
-              `Broken database: index 'from' missing on objectStore '${absSemester}'`,
+              'Broken database: index \'from\' missing on objectStore \'' +
+                absSemester + '\'',
               'error')
             return reject()
           }
           if (!store.indexNames.contains('to')) {
             loggerInit('init.storage.tab',
-              `Broken database: index 'to' missing on objectStore '${absSemester}'`,
+              'Broken database: index \'to\' missing on objectStore \'' +
+                absSemester + '\'',
               'error')
             return reject()
           }

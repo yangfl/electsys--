@@ -1,7 +1,7 @@
 'use strict'
 let sdtleft
 {
-  class StuInfo {
+  class UserInfo {
     constructor (node) {
       if (node === undefined) {
         // quickInfo
@@ -49,7 +49,15 @@ let sdtleft
       return this.toString()
     }
 
-    toString() {
+    toJSON () {
+      let result = {}
+      for (let key in this) {
+        result[key] = this[key]
+      }
+      return result
+    }
+
+    toString () {
       return this.year + '-' + this.semester
     }
 
@@ -84,19 +92,18 @@ let sdtleft
       return result
     }
   }
-
-  StuInfo.INFO_MAPPER = {
+  UserInfo.INFO_MAPPER = {
     'name': 'lblXm',
     'major': 'lblZy',
     'year': 'lblXn',
     'semester': 'lblXq',
   }
-  StuInfo.handler = {
+  UserInfo.handler = {
     enumerate (target, key) {
-      return Object.keys(StuInfo.INFO_MAPPER)
+      return Object.keys(UserInfo.INFO_MAPPER)
     },
     ownKeys (target, key) {
-      return Object.keys(StuInfo.INFO_MAPPER)
+      return Object.keys(UserInfo.INFO_MAPPER)
     },
   }
 
@@ -106,8 +113,8 @@ let sdtleft
     node: undefined,
     loaded: 'Deferred' in window ? new Deferred() : undefined,
     load (reload) {
-      if (reload || ('Deferred' in window ?
-            this.loaded instanceof Deferred : this.loaded === undefined)) {
+      if (reload || this.loaded === undefined ||
+          this.loaded.resolve !== undefined) {
         this._info = undefined
         this._menu = undefined
         let loaded = this.loaded
@@ -128,12 +135,12 @@ let sdtleft
     _info: undefined,
     get info () {
       if (this._info === undefined) {
-        this._info = new StuInfo(this.node)
+        this._info = new UserInfo(this.node)
       }
       return this._info
     },
     set info (data) {
-      this._info = new StuInfo(data)
+      this._info = new UserInfo(data)
     },
 
     _menu: undefined,

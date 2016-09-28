@@ -1,5 +1,4 @@
 'use strict'
-let bsidQueue = new Queue
 let lessonQueue = new Queue
 
 
@@ -19,7 +18,7 @@ config.loaders.push(item => {
     throw new TypeError('broken settings')
   }
   if (typeof item.ajax_get_interval === 'number') {
-    bsidQueue.defaultOptions = {
+    Lesson.bsid.queue.defaultOptions = {
       cooldown: item.ajax_get_interval,
     }
   }

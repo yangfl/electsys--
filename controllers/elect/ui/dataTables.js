@@ -230,7 +230,6 @@ function refreshAvailable (reload) {
     if (l_tab.length) {
       let last_tab = l_tab[l_tab.length - 1]
       scheduleTable.show(last_tab.scheduleTable)
-      selectedLesson.fromBsid(last_tab.bsids)
     }
     dataTable_available.draw()
   })

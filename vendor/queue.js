@@ -38,7 +38,7 @@ class Queue extends Array {
       return args[1].then(() => this._then(args[2]), () => {
         // stop when error
         this.running = false
-        this.clear()
+        // this.clear()
       })
     } else {
       this.running = false

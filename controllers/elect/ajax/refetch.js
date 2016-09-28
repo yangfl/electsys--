@@ -77,7 +77,6 @@ class LogoutError extends ElectError {
   constructor (message = 'Logout') {
     super(message)
     this.name = 'LogoutError'
-    document.dispatchEvent(new Event('logout'))
   }
 }
 

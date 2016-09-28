@@ -29,7 +29,7 @@
     <section id="alert"></section>
 
     <section id="init">
-      <div id="init-elect">
+      <div id="init-default">
         <div id="confirm-elect" class="modal fade bootstrap-dialog type-primary size-normal" role="dialog">
           <div class="modal-dialog">
             <div class="modal-content">
@@ -300,6 +300,34 @@
             </div>
             <div class="modal-body">
               <div class="bootstrap-dialog-body">
+                <h3>Load lesson arranges</h3>
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="lesson-fetch-abssemester">Semester</label>
+                    <div class="col-sm-10">
+                      <select class="form-control" id="lesson-fetch-abssemester">
+                        <option value="2016-2017-1">2016-2017-1</option>
+                        <option value="2016-2017-2">2016-2017-2</option>
+                        <option value="2017-2018-1">2017-2018-1</option>
+                        <option value="2017-2018-2">2017-2018-2</option>
+                        <option value="2018-2019-1">2018-2019-1</option>
+                        <option value="2018-2019-2">2018-2019-2</option>
+                        <option value="2019-2020-1">2019-2020-1</option>
+                        <option value="2019-2020-2">2019-2020-2</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                      <button type="button" id="lesson-fetch-load" class="btn btn-default">Load</button>
+                      <span class="loading" id="lesson-fetch-loading">
+                        Loading<span>.</span><span>.</span><span>.</span>
+                      </span>
+                      <span id="lesson-fetch-loaded">Loaded!</span>
+                    </div>
+                  </div>
+                </div>
+
                 <h3 data-i18n="config_ajax"></h3>
                 <div class="row">
                   <div class="col-sm-4">
@@ -359,22 +387,23 @@
       <script src="/controllers/config.js"></script>
       <script src="/controllers/i18n.js"></script>
       <script src="/controllers/info.js"></script>
+      <script src="/controllers/user.js"></script>
       <script src="/controllers/elect/ajax/refetch.js"></script>
       <script src="/controllers/elect/ajax/url.js"></script>
       <script src="/controllers/elect/data/blacklist.js"></script>
       <script src="/controllers/elect/data/common-course.js"></script>
-      <script src="/controllers/elect/debug/list.js"></script>
-      <script src="/controllers/elect/debug/setup.js"></script>
       <script src="/controllers/elect/init/deferred.js"></script>
       <script src="/controllers/elect/init/elect-stage.js"></script>
-      <script src="/controllers/elect/init/login.js"></script>
       <script src="/controllers/elect/init/queue.js"></script>
       <script src="/controllers/elect/init/storage.js"></script>
       <script src="/controllers/elect/lesson/lesson.js"></script>
       <script src="/controllers/elect/lesson/parser.js"></script>
       <script src="/controllers/elect/lesson/query.js"></script>
-      <script src="/controllers/elect/lesson/selected.js"></script>
       <script src="/controllers/elect/lesson/tab.js"></script>
+      <script src="/controllers/elect/mode/__main__.js"></script>
+      <script src="/controllers/elect/mode/debug.js"></script>
+      <script src="/controllers/elect/mode/default.js"></script>
+      <script src="/controllers/elect/mode/list.js"></script>
       <script src="/controllers/elect/ui/available-table.js"></script>
       <script src="/controllers/elect/ui/dataTables.js"></script>
       <script src="/controllers/elect/ui/schedule-table.js"></script>

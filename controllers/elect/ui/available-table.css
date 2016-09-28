@@ -1,8 +1,11 @@
 .table-entry > tbody > tr {
   cursor: pointer; }
 
-.table-entry > tbody >  tr:hover, .preview {
+.table-entry > tbody > tr:not(:only-child):hover, .preview {
   background-color: var(--color-hover); }
+
+.table-entry > tbody > tr:only-child {
+  cursor: auto; }
 
 .table-entry .not-full {
   background-color: var(--color-not-full); }

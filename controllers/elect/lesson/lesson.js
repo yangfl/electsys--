@@ -5,7 +5,7 @@ class Lesson {
    * @constructs Lesson
    * @param {Object} data - DB record which contains lesson info
    */
-  constructor (data = {}) {
+  constructor (data) {
     if (data.fullref === undefined) {
       throw new TypeError('fullref required')
     }
@@ -18,7 +18,10 @@ class Lesson {
     for (let i = 0, k = this.constructor.PROPERTIES.length; i < k; i++) {
       let property = this.constructor.PROPERTIES[i]
       // db will return null for empty values
-      this[property] = data[property] || undefined
+      this[property] = data[property]
+      if (this[property] === null) {
+        this[property] = undefined
+      }
     }
   }
 
@@ -40,29 +43,7 @@ class Lesson {
         if (!Number.isInteger(bsid)) {
           throw new TypeError('bsid must be integer')
         }
-        return new Promise(resolve => {
-          db_lesson.transaction('lesson').objectStore('lesson')
-            .index('bsid').get(bsid).onsuccess = event => {
-              if (event.target.result) {
-                // bsid found in db
-                return resolve(new Lesson(event.target.result))
-              } else {
-                // remote fetch
-                if (!(bsid in this.queueBsid)) {
-                  this.queueBsid[bsid] = this.bsid2fullref(bsid)
-                    .then(fullref => {
-                      delete this.queueBsid[bsid]
-                      return this.from(fullref, {bsid: bsid})
-                    }, e => {
-                      this.queueBsid = {}
-                      return loggerError('lesson', 'Error when fetch ' + bsid,
-                        true)(e)
-                    })
-                }
-                return resolve(this.queueBsid[bsid])
-              }
-            }
-        })
+        return this.bsid.get(bsid).then(fullref => Lesson.from(fullref))
       case 'object':
         data = token
         fullref = data.fullref
@@ -73,23 +54,21 @@ class Lesson {
       case 'string':
         fullref = token
         data = _data
-        let p
         if (fullref in this.cache) {
           p = Promise.resolve(this.cache[fullref])
         } else {
           p = new Promise((resolve, reject) => {
-            db_lesson.transaction('lesson').objectStore('lesson')
-              .get(fullref).onsuccess = event => {
-                if (event.target.result) {
-                  // fullref found in db
-                  return resolve(new Lesson(event.target.result))
-                } else if (data) {
-                  // create new
-                  return resolve(new Lesson({fullref: fullref}))
-                } else {
-                  return reject(new RangeError(`fullref ${fullref} unknown`))
-                }
+            this.db.ro().get(fullref).onsuccess = event => {
+              if (event.target.result) {
+                // fullref found in db
+                return resolve(new Lesson(event.target.result))
+              } else if (data) {
+                // create new
+                return resolve(new Lesson({fullref: fullref}))
+              } else {
+                return reject(new RangeError(`fullref ${fullref} unknown`))
               }
+            }
           })
         }
         if (data) {
@@ -108,7 +87,11 @@ class Lesson {
 
   _parse () {
     try {
-      this.schedule = this.constructor.scheduleParser.parse(this.scheduleDesc)
+      this.schedule = this.constructor.scheduleParser.parse(
+        this.scheduleDesc.replace(
+          '不安排教室 不安排教师',
+          '(' + this.scheduleDesc.split('\r\n', 1)[0].match(/\d+/g).join('-') +
+          '周)'))
     } catch (e) {
       console.warn(this.scheduleDesc.replace(/\r/g, '\\r'))
       throw e
@@ -124,15 +107,18 @@ class Lesson {
       } */
       // detect update event
       for (let i = 0, k = this.constructor.PROPERTIES.length; i < k; i++) {
-        let property = this.constructor.PROPERTIES[i]
-        if (this[property] === undefined && data[property]) {
-          isUpdated = true
-          this[property] = data[property]
-        } else if (data[property] !== undefined &&
-            this[property] !== data[property]) {
-          console.warn(
-            'property %s:', property, this[property],
-            'confilcts with', data[property])
+        let key = this.constructor.PROPERTIES[i]
+        if (data[key] !== undefined && data[key] !== null) {
+          if (this[key] === undefined) {
+            isUpdated = true
+            this[key] = data[key]
+          } else if (this[key] !== data[key]) {
+            if (key != 'classroom' && key != 'building') {
+              console.warn(
+                'in %s \nproperty %s: old value', this.fullref, key, this[key],
+                'confilcts with', data[key])
+            }
+          }
         }
       }
     }
@@ -145,16 +131,20 @@ class Lesson {
 
     if (isUpdated && !noStore) {
       // updated, save lesson info
+      if (this.constructor.db.groupAssign) {
+        this.constructor.db.updateQueue.push(this)
+        return this.constructor.db.wrote
+      }
       return new Promise(resolve => {
-        db_lesson.transaction(['lesson'], 'readwrite').objectStore('lesson')
-          .put(this).onsuccess = event => {
-            loggerInit('lesson', this.fullref + ' stored')
-            return resolve()
-          }
+        this.constructor.db.rw().put(this).onsuccess = event => {
+          loggerInit('lesson', this.fullref + ' stored')
+          return resolve()
+        }
       })
     } else {
       // not updated
       return Promise.resolve()
+
     }
   }
 
@@ -202,22 +192,12 @@ class Lesson {
     if (!this.hasOwnProperty('bsid')) {
       throw new TypeError('bsid unknown')
     }
-    return refetch(ELECT.remove(bsid), undefined, undefined, () => false)
+    return fetch(ELECT.remove(this.bsid), {credentials: 'include'})
+      .then(handleResponseError)
       .then(() => window.dispatchEvent(new Event('login')))
   }
 
   /* helpers */
-  static bsid2fullref (bsid) {
-    return bsidQueue.push(() => refetch(ELECT.bsid(bsid))
-      .then(responseText).then(data => {
-        let match = data.match(/课号.*\r?\n(.*)/)
-        if (!match) {
-          throw new TypeError('no fullref in response')
-        }
-        return match[1].trim()
-      }))
-  }
-
   static splitFullref (fullref) {
     let result = fullref.match(/^(\d{3})-\((.{11})\)(.{5})\((.{3})\)$/)
     result.shift()
@@ -227,32 +207,117 @@ class Lesson {
 
   static selectAll (absSemester) {
     return new Promise(resolve => {
-      db_lesson.transaction('lesson').objectStore('lesson')
-        .getAll().onsuccess = event => {
-          let result = {}
-          let l_record = event.target.result
-          let i = l_record.length
-          while (i--) {
-            let record = l_record[i]
-            let fullref_split = Lesson.converters.splitFullref(record.fullref)
+      this.db.ro().getAll().onsuccess = event => {
+        let result = {}
+        let l_record = event.target.result
+        let i = l_record.length
+        while (i--) {
+          let record = l_record[i]
+          let fullref_split = Lesson.converters.splitFullref(record.fullref)
 
-            let obj_semester = result[fullref_split[1]]
-            if (!obj_semester) {
-              result[fullref_split[1]] = {}
-              obj_semester = result[fullref_split[1]]
-            }
-            let obj_ref = obj_semester[fullref_split[2]]
-            if (!obj_ref) {
-              obj_semester[fullref_split[2]] = {}
-              obj_ref = obj_semester[fullref_split[2]]
-            }
-            obj_ref[fullref_split[0]] = record
+          let obj_semester = result[fullref_split[1]]
+          if (!obj_semester) {
+            result[fullref_split[1]] = {}
+            obj_semester = result[fullref_split[1]]
           }
-          return resolve(result)
+          let obj_ref = obj_semester[fullref_split[2]]
+          if (!obj_ref) {
+            obj_semester[fullref_split[2]] = {}
+            obj_ref = obj_semester[fullref_split[2]]
+          }
+          obj_ref[fullref_split[0]] = record
         }
+        return resolve(result)
+      }
     })
   }
 }
+
+
+Lesson.bsid = {
+  task: {},
+  queue: new Queue,
+
+  get (bsid) {
+    if (!(bsid in this.task)) {
+      this.task[bsid] = new Promise(resolve => {
+        Lesson.db.ro().index('bsid').get(bsid).onsuccess = event => {
+          if (event.target.result) {
+            // bsid found in db
+            return resolve(new Lesson(event.target.result))
+          } else {
+            // remote fetch
+            return this.query(bsid)
+              .then(fullref => {
+                return Lesson.from(fullref, {bsid: bsid})
+              }, e => {
+                return loggerError('lesson', 'Error when fetch ' + bsid,
+                  true)(e)
+              })
+          }
+        }
+      })
+      this.task[bsid].catch(() => {
+        delete this.task[bsid]
+      })
+    }
+    return this.task[bsid]
+  },
+
+  query (bsid) {
+    return this.queue.push(() => refetch(ELECT.bsid(bsid))
+      .then(responseText).then(data => {
+        let match = data.match(/课号.*\r?\n(.*)/)
+        if (!match) {
+          throw new TypeError('no fullref in response')
+        }
+        return match[1].trim()
+      }))
+  },
+}
+
+
+Lesson.db = {
+  wrote: undefined,
+
+  updateQueue: [],
+
+  _groupAssign: false,
+  get groupAssign () {
+    return this._groupAssign
+  },
+  set groupAssign (value) {
+    this._groupAssign = value
+    if (value) {
+      this.wrote = new Deferred
+      return
+    }
+    return new Promise(resolve => {
+      let store = this.rw()
+      let i = this.updateQueue.length
+      loggerInit('lesson.db', 'group store start')
+      let writeAll = () => {
+        if (this.updateQueue.length) {
+          store.put(this.updateQueue.shift()).onsuccess = writeAll
+        } else {
+          loggerInit('lesson.db', 'group store end, ' + i + ' stored')
+          this.wrote.resolve()
+          this.wrote = undefined
+        }
+      }
+      writeAll()
+    })
+  },
+
+  ro () {
+    return db_lesson.transaction('lesson').objectStore('lesson')
+  },
+
+  rw () {
+    return db_lesson.transaction(['lesson'], 'readwrite').objectStore('lesson')
+  },
+}
+
 
 Lesson.SCHEDULE_RULE = `
 Schedule
@@ -354,4 +419,4 @@ Lesson.PROPERTIES = Object.values(Lesson.STRUCT)
 Lesson.PROPERTIES.unshift('bsid')
 Lesson.PROPERTIES.push('schedule')
 Lesson.cache = {}
-Lesson.queueBsid = {}
+Lesson.groupAssign = false

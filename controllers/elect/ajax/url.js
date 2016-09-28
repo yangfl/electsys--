@@ -3,13 +3,10 @@ const ELECT = {
   _host: undefined,
   path: {
     bsid: '/edu/lesson/viewLessonArrangeDetail2.aspx?bsid=',
-    login: '/edu/login.aspx',
-    logout: '/edu/logout.aspx',
     remove: '/edu/student/elect/removeRecommandLesson.aspx?' +
       'bsid={}&redirectForm=removeLessonFast.aspx',
     stage: '/edu/student/elect/warning.aspx?xklc={0}&lb={1}',
     tab: '/edu/student/elect/',
-    testLogin: '/edu/changePwd.aspx',
   },
   list: {
     stage: [

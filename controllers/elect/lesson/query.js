@@ -50,16 +50,26 @@ Lesson.fetch.parseArrangesXML = data => {
   while (i--) {
     let detail = l_detail[i]
     let entry = {}
-    for (let attr in STRUCT_DETAIL) {
-      let value = detail.getAttribute(attr).trim()
-      if (value && !isNaN(value)) {
-        value = Number(value)
-      } else if (STRUCT_DETAIL[attr] === 'scheduleDesc') {
-        value += '\r\n'
+    for (let attr in Lesson.STRUCT) {
+      let value = detail.getAttribute(attr)
+      if (typeof value === 'string') {
+        value = value.trim()
       }
-      entry[STRUCT_DETAIL[attr]] = value
+      if (value !== null && !isNaN(value)) {
+        value = Number(value)
+      // Lesson.STRUCT[attr] === 'scheduleDesc'
+      } else if (attr === 'sjms') {
+        value += '\r\n'
+      } else if (value === '.') {
+        value = null
+      }
+      entry[Lesson.STRUCT[attr]] = value
     }
     p.push(Lesson.from(entry))
   }
-  return Promise.all(p)
+
+  Lesson.db.groupAssign = true
+  return Promise.all(p).then(() => {
+    Lesson.db.groupAssign = false
+  })
 }
