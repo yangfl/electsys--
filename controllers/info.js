@@ -70,6 +70,7 @@ let sdtleft
       return true
     }
 
+    /** @type {UserInfo} */
     get next () {
       let result = new this.constructor(this)
       if (result.semester === 1) {
@@ -81,6 +82,7 @@ let sdtleft
       return result
     }
 
+    /** @type {UserInfo} */
     get prev () {
       let result = new this.constructor(this)
       if (result.semester === 1) {
@@ -132,6 +134,7 @@ let sdtleft
       return this.loaded
     },
 
+    /** @type {UserInfo} */
     _info: undefined,
     get info () {
       if (this._info === undefined) {

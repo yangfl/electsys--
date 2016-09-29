@@ -7,6 +7,11 @@ class HttpError extends TypeError {
 }
 
 
+/**
+ * @param {Response} response
+ * @throws {HttpError}
+ * @returns {Response}
+ */
 function handleResponseError (response) {
   if (!response.ok) {
     throw new HttpError(response.statusText)
@@ -15,17 +20,31 @@ function handleResponseError (response) {
 }
 
 
+/**
+ * @param {Response} response
+ * @returns {string}
+ */
 function responseText (response) {
   return response.text()
 }
 
 
+/**
+ * @param {Response} response
+ * @returns {string}
+ */
 function responseErrorText (response) {
   handleResponseError(response)
   return response.text()
 }
 
 
+/**
+ * @async
+ * @param {string} url
+ * @param {Object} [options={credentials: 'include'}]
+ * @returns {Response}
+ */
 function refetch (url, options = {credentials: 'include'},
     filter = refetch.default.filter,
     ticker = refetch.default.tickerFactory(url, options)) {
@@ -81,6 +100,11 @@ class LogoutError extends ElectError {
 }
 
 
+/**
+ * @param {Response} response
+ * @throws {ElectError}
+ * @returns {bool}
+ */
 function pageFilter (response) {
   if (response.url.endsWith('outTimePage.aspx')) {
     throw new LogoutError

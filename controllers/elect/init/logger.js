@@ -19,6 +19,11 @@ function loggerInit (func, msg, method = 'debug',
 }
 
 
+/**
+ * @param {string} func
+ * @param {(string|string[]|bool)} [hint=false]
+ * @param {bool} [wantThrow=false]
+ */
 function loggerError (func, hint, wantThrow) {
   if (typeof hint === 'boolean') {
     wantThrow = hint
@@ -102,6 +107,10 @@ window.addEventListener('error',
 window.addEventListener('unhandledrejection',
   function loggerGlobalPromiseError (event) {
     loggerError('global.promise')(event.reason)
+    if (event.reason === undefined) {
+      // loggerInit('global.promise', 'promise rejection has been handled')
+      event.preventDefault()
+    }
   })
 
 

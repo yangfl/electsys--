@@ -42,6 +42,9 @@ const ELECT = {
     }
   },
 
+  /**
+   * @param {number} bsid
+   */
   bsid (bsid) {
     return ELECT._host + ELECT.path.bsid + bsid
   },
@@ -49,10 +52,16 @@ const ELECT = {
   login: undefined,
   logout: undefined,
 
+  /**
+   * @param {number} bsid
+   */
   remove (bsid) {
     return ELECT._host + ELECT.path.remove.replace('{}', bsid)
   },
 
+  /**
+   * @param {number[]} s
+   */
   stage (s) {
     return ELECT._host +
       ELECT.path.stage.replace('{0}', s[0]).replace('{1}', s[1])

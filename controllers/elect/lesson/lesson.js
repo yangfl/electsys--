@@ -1,6 +1,74 @@
 'use strict'
 class Lesson {
   /**
+   * @param {(Number|Object|string)} token
+   * @param {Object} [data]
+   */
+  static from (token, data) {
+    if (Array.isArray(token)) {
+      return Promise.all(token.map(tkn => this.from(tkn)))
+    }
+    switch (typeof token) {
+      case 'number':
+        return this.fromBsid(token)
+      case 'object':
+        return this.fromData(token)
+      case 'string':
+        return this.fromFullref(token, data)
+      case 'undefined':
+        throw new TypeError('1 argument required, but only 0 present.')
+      default:
+        throw new TypeError('data type invalid')
+    }
+  }
+
+  static fromBsid (bsid) {
+    if (!Number.isInteger(bsid)) {
+      throw new TypeError('bsid must be integer')
+    }
+    return this.bsid.get(bsid)
+  }
+
+  static fromData (data) {
+    if (typeof data.fullref !== 'string') {
+      throw new TypeError('fullref required')
+    }
+    return this.fromFullref(data.fullref, data)
+  }
+
+  /**
+   * @param {string} fullref
+   * @param {Object} [data]
+   */
+  static fromFullref (fullref, data) {
+    let p
+    if (fullref in this.cache) {
+      p = Promise.resolve(this.cache[fullref])
+    } else {
+      p = new Promise((resolve, reject) => {
+        this.db.ro().get(fullref).onsuccess = event => {
+          if (event.target.result) {
+            // fullref found in db
+            return resolve(new Lesson(event.target.result))
+          } else if (data) {
+            // create new
+            return resolve(new Lesson({fullref: fullref}))
+          } else {
+            return reject(new RangeError(`fullref ${fullref} unknown`))
+          }
+        }
+      })
+    }
+    if (data) {
+      p = p.then(l => {
+        l.update(data)
+        return l
+      })
+    }
+    return p
+  }
+
+  /**
    * Constructe from a DB record.
    * @constructs Lesson
    * @param {Object} data - DB record which contains lesson info
@@ -33,58 +101,6 @@ class Lesson {
     return this.constructor.splitFullref(this.fullref)[2]
   }
 
-  static from (token, _data) {
-    let data
-    let fullref
-    let p
-    switch (typeof token) {
-      case 'number':
-        let bsid = token
-        if (!Number.isInteger(bsid)) {
-          throw new TypeError('bsid must be integer')
-        }
-        return this.bsid.get(bsid).then(fullref => Lesson.from(fullref))
-      case 'object':
-        data = token
-        fullref = data.fullref
-        if (typeof fullref !== 'string') {
-          throw new TypeError('fullref required')
-        }
-        return Lesson.from(data.fullref, data)
-      case 'string':
-        fullref = token
-        data = _data
-        if (fullref in this.cache) {
-          p = Promise.resolve(this.cache[fullref])
-        } else {
-          p = new Promise((resolve, reject) => {
-            this.db.ro().get(fullref).onsuccess = event => {
-              if (event.target.result) {
-                // fullref found in db
-                return resolve(new Lesson(event.target.result))
-              } else if (data) {
-                // create new
-                return resolve(new Lesson({fullref: fullref}))
-              } else {
-                return reject(new RangeError(`fullref ${fullref} unknown`))
-              }
-            }
-          })
-        }
-        if (data) {
-          p = p.then(l => {
-            l.update(data)
-            return l
-          })
-        }
-        return p
-      case 'undefined':
-        throw new TypeError('1 argument required, but only 0 present.')
-      default:
-        throw new TypeError('data type invalid')
-    }
-  }
-
   _parse () {
     try {
       this.schedule = this.constructor.scheduleParser.parse(
@@ -98,6 +114,10 @@ class Lesson {
     }
   }
 
+  /**
+   * @param {Object} [data]
+   * @param {bool} [noStore=false]
+   */
   update (data, noStore) {
     let isUpdated = false
     if (typeof data === 'object') {
@@ -144,7 +164,6 @@ class Lesson {
     } else {
       // not updated
       return Promise.resolve()
-
     }
   }
 
@@ -205,7 +224,7 @@ class Lesson {
     return result
   }
 
-  static selectAll (absSemester) {
+  static selectAll () {
     return new Promise(resolve => {
       this.db.ro().getAll().onsuccess = event => {
         let result = {}
@@ -238,6 +257,11 @@ Lesson.bsid = {
   task: {},
   queue: new Queue,
 
+  /**
+   * @async
+   * @param {number} bsid
+   * @returns {Lesson}
+   */
   get (bsid) {
     if (!(bsid in this.task)) {
       this.task[bsid] = new Promise(resolve => {
@@ -249,7 +273,7 @@ Lesson.bsid = {
             // remote fetch
             return this.query(bsid)
               .then(fullref => {
-                return Lesson.from(fullref, {bsid: bsid})
+                return Lesson.fromFullref(fullref, {bsid: bsid})
               }, e => {
                 return loggerError('lesson', 'Error when fetch ' + bsid,
                   true)(e)
@@ -264,6 +288,11 @@ Lesson.bsid = {
     return this.task[bsid]
   },
 
+  /**
+   * @async
+   * @param {number} bsid
+   * @returns {string}
+   */
   query (bsid) {
     return this.queue.push(() => refetch(ELECT.bsid(bsid))
       .then(responseText).then(data => {
@@ -278,8 +307,10 @@ Lesson.bsid = {
 
 
 Lesson.db = {
+  /** @type {Promise} */
   wrote: undefined,
 
+  /** @type {Lesson[]} */
   updateQueue: [],
 
   _groupAssign: false,
@@ -290,9 +321,7 @@ Lesson.db = {
     this._groupAssign = value
     if (value) {
       this.wrote = new Deferred
-      return
-    }
-    return new Promise(resolve => {
+    } else {
       let store = this.rw()
       let i = this.updateQueue.length
       loggerInit('lesson.db', 'group store start')
@@ -306,13 +335,19 @@ Lesson.db = {
         }
       }
       writeAll()
-    })
+    }
   },
 
+  /**
+   * @returns {IDBObjectStore}
+   */
   ro () {
     return db_lesson.transaction('lesson').objectStore('lesson')
   },
 
+  /**
+   * @returns {IDBObjectStore}
+   */
   rw () {
     return db_lesson.transaction(['lesson'], 'readwrite').objectStore('lesson')
   },

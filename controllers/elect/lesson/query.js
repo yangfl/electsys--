@@ -1,4 +1,10 @@
 'use strict'
+/**
+ * @async
+ * @param {string} [year=sdtleft.info.year]
+ * @param {number} [semester=sdtleft.info.semester]
+ * @param {number} [grade]
+ */
 Lesson.fetch = (
     year = sdtleft.info.year, semester = sdtleft.info.semester, grade) =>
   fetch(ELECTQ.report, {credentials: 'include'})
@@ -32,16 +38,29 @@ Lesson.fetch = (
     .then(responseErrorText).then(Lesson.fetch.parseArrangesXML)
 
 
+/**
+ * @async
+ * @param {string} data
+ * @returns {Response}
+ */
 Lesson.fetch.requestDownload = data => fetch(
   ELECTQ.host + JSON.parse(
     data.match(/new RSClientController\((.*)\)/)[1].split(',')[14]) + 'XML',
   {credentials: 'include'})
 
 
+/**
+ * @async
+ * @param {string} url
+ */
 Lesson.fetch.fromUrl = url => fetch(url, {credentials: 'include'})
   .then(responseErrorText).then(Lesson.fetch.parseArrangesXML)
 
 
+/**
+ * @async
+ * @param {string} data
+ */
 Lesson.fetch.parseArrangesXML = data => {
   let l_detail = new DOMParser().parseFromString(data, 'application/xml')
     .getElementsByTagName('Detail_Collection')[0].children
@@ -51,21 +70,22 @@ Lesson.fetch.parseArrangesXML = data => {
     let detail = l_detail[i]
     let entry = {}
     for (let attr in Lesson.STRUCT) {
+      let key = Lesson.STRUCT[attr]
       let value = detail.getAttribute(attr)
-      if (typeof value === 'string') {
+      // null for empty value
+      if (value !== null) {
         value = value.trim()
+        if (!isNaN(value)) {
+          value = Number(value)
+        } else if (value === '.') {
+          value = null
+        } else if (key === 'scheduleDesc') {
+          value += '\r\n'
+        }
       }
-      if (value !== null && !isNaN(value)) {
-        value = Number(value)
-      // Lesson.STRUCT[attr] === 'scheduleDesc'
-      } else if (attr === 'sjms') {
-        value += '\r\n'
-      } else if (value === '.') {
-        value = null
-      }
-      entry[Lesson.STRUCT[attr]] = value
+      entry[key] = value
     }
-    p.push(Lesson.from(entry))
+    p.push(Lesson.fromData(entry))
   }
 
   Lesson.db.groupAssign = true
