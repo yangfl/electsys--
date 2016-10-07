@@ -6,6 +6,12 @@ from bottle import *
 
 ROOT = 'tpl'
 
+
+@route('/<filename>')
+def temp_file(filename):
+    return static_file(filename, root=ROOT)
+
+
 def set_static(path):
     @route(path + '/<filename>')
     def static(filename):
