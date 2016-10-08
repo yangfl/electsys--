@@ -17,16 +17,31 @@ let rootTab
 
     _preload () {
       return new Promise(resolve => {
-        let absSemester = sdtleft.info.toString()
-        db_tab.transaction(absSemester).objectStore(absSemester)
-          .index('from').get(typeDesc).onsuccess = event => {
-            // TODO
-            return resolve(this)
+        this.constructor.db.ro().index('from')
+          .openCursor(IDBKeyRange.only(this.typeDescPath))
+          .onsuccess = event => {
+            let cursor = event.target.result
+            if (!cursor) {
+              return resolve(this)
+            }
+            let token = cursor.value.to
+            if (isEntry(token)) {
+              if (this.entries === undefined) {
+                this.entries = {}
+              }
+              this.entries[token] = undefined
+            } else {
+              if (this.types === undefined) {
+                this.types = {}
+              }
+              this.types[token] = cursor.value.value
+            }
+            return cursor.continue()
           }
       })
     }
 
-    _load (reload) {
+    _load () {
       return refetch(this.parent._nextRequest(this.typeDesc)).then(
         response => response.text().then(data => this._parse(data, response)))
     }
@@ -102,6 +117,26 @@ let rootTab
           })
         this.bsids.sort()
       }
+
+      if (this._parseExtend) {
+        this._parseExtend(data, response)
+      }
+
+      // store
+      let typeDescPath = this.typeDescPath
+      let store = this.constructor.db.rw()
+      let onStoreError = event => {
+        if (event.target.error.name === 'ConstraintError') {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+      }
+      for (let ref in this.entries) {
+        store.add({from: typeDescPath, to: ref}).onerror = onStoreError
+      }
+      for (let typeDesc in this.types) {
+        store.add({from: typeDescPath, to: typeDesc}).onerror = onStoreError
+      }
     }
 
     _nextTabClass (nextType) {
@@ -132,28 +167,15 @@ let rootTab
       }
     }
 
-    /**
-     * Get arrange by token
-     * @param {(string|Object)} token
-     * @param {sring} button
-     * @return ArrangeTab
-     */
-    entry (nextType, wantsPredict) {
-      if (this.entries === undefined) {
-        throw new TypeError('no entry available')
-      }
-      if (!(nextType in this.entries)) {
-        return Promise.reject(new TypeError(`invalid enrty ${nextType}`))
-      }
-
-      let nextTab = this._tabCache[nextType]
-      let p
-      if (wantsPredict) {
-        p = nextTab.preload()
+    hasType (nextType) {
+      if (isEntry(nextType)) {
+        if (!this.entries) {
+          throw new TypeError('no entry available')
+        }
+        return nextType in this.entries
       } else {
-        p = nextTab.load()
+        return super.hasType(nextType)
       }
-      return p
     }
 
     submit () {
@@ -163,6 +185,35 @@ let rootTab
         })), undefined, () => false)
       .then(() => window.dispatchEvent(new Event('login')))
     }
+
+    isEmpty () {
+      for (let k in this.types) {
+        return false
+      }
+      for (let k in this.entries) {
+        return false
+      }
+      return true
+    }
+  }
+
+  Tab.db = {
+    /**
+     * @returns {IDBObjectStore}
+     */
+    ro () {
+      let absSemester = sdtleft.info.toString()
+      return db_tab.transaction(absSemester).objectStore(absSemester)
+    },
+
+    /**
+     * @returns {IDBObjectStore}
+     */
+    rw () {
+      let absSemester = sdtleft.info.toString()
+      return db_tab.transaction([absSemester], 'readwrite')
+        .objectStore(absSemester)
+    },
   }
 
   class RootTab extends Tab {
@@ -202,8 +253,8 @@ let rootTab
   }
 
   class SubCommonTab extends Tab {
-    _parse (data, response) {
-      super._parse(data, response)
+    _parseExtend (data, response) {
+      this.types = undefined
       // add common course info
       let common_course_type = this.typeDesc[16] - 1
       for (let ref in this.entries) {
@@ -213,8 +264,7 @@ let rootTab
   }
 
   class OutTab extends Tab {
-    _parse (data, response) {
-      super._parse(data, response)
+    _parseExtend (data, response) {
       // this.types
       let select = this.node.getElementsByTagName('select')
       let select_school = select[0]
@@ -231,8 +281,7 @@ let rootTab
             let value = key.split('-')
             return value[0] in target[0] && target[1].includes(Number(value[1]))
           },
-        }
-      )
+        })
 
       // move page info to the default subtype
       let cur_school = select_school.options[select_school.selectedIndex].value
@@ -243,6 +292,12 @@ let rootTab
       subtype_tab._parse(data, response)
 
       this.entries = undefined
+
+      let typeDescPath = this.typeDescPath
+      let store = this.constructor.db.rw()
+      for (let i in this.types) {
+        store.put({from: typeDescPath, to: i, value: this.types[i]})
+      }
     }
 
     _nextTabClass (nextType) {
@@ -260,8 +315,7 @@ let rootTab
   }
 
   class SubOutTab extends Tab {
-    _parse (data, response) {
-      super._parse(data, response)
+    _parseExtend (data, response) {
       // add school info
       let select_school = this.node.getElementsByTagName('select')[0]
       let name_school = select_school.options[select_school.selectedIndex].text
@@ -272,8 +326,7 @@ let rootTab
   }
 
   class ArrangeTab extends Tab {
-    _parse (data, response) {
-      super._parse(data, response)
+    _parseExtend (data, response) {
       let q = []
       // add lesson name
       let name = this.parent.entries[this.typeDesc].name

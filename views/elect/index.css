@@ -49,13 +49,8 @@ section:not(#alert):not(#init) {
   text-align: center;
   color: #aaa; }
 
-.btn.progress-bar {
-  /* attritubes that progress-bar changes */
-  width: 100%;
-  font-size: 14px;
-  line-height: 1.42857143; }
-
 .progress-bar-active {
+  /* .progress-bar.active, .progress.active .progress-bar @ bootstrap */
   animation: progress-bar-stripes 2s linear infinite; }
 
 #raw-type-disabled {
@@ -116,8 +111,7 @@ section:not(#alert):not(#init) {
 
 @keyframes fade-out {
   from { opacity: 1; }
-  to { opacity: 0; }
-}
+  to { opacity: 0; } }
 
 #modal-config .row {
   margin-bottom: 6px; }
@@ -153,6 +147,9 @@ td:first-child > span {
   margin-left: 6px;
   font-size: 10px; }
 
+#wait-arrange, #select-arrange {
+  z-index: 1041; }
+
 #select-arrange > .modal-dialog {
   width: 60%; }
 
@@ -169,18 +166,23 @@ td:first-child > span {
 #table-arrange td:nth-child(4) {
   white-space: nowrap; }
 
-#table-arrange td:nth-child(4) > .glyphicon {
+#table-arrange td:nth-child(4) > p {
+  margin: auto;
+  display: flex;
+  }
+
+#table-arrange td:nth-child(4) .glyphicon {
   color: #337ab7; }
 
-#table-arrange td:nth-child(4) > .glyphicon-chevron-up,
-#table-arrange td:nth-child(4) > .glyphicon-chevron-down {
+#table-arrange td:nth-child(4) .glyphicon-chevron-up, .td-pending,
+#table-arrange td:nth-child(4) .glyphicon-chevron-down {
   float: right; }
 
-#table-arrange td:nth-child(4) > .glyphicon-dashed-arrow-right {
+#table-arrange td:nth-child(4) .glyphicon-dashed-arrow-right {
   bottom: -2px;
   font-size: 165%; }
 
-.td-min, .td-max  {
+.td-min, .td-confirmed, .td-max  {
   float: left; }
 
 .td-max {
@@ -195,9 +197,7 @@ td:first-child > span {
 .glyphicon-dashed-arrow-left {
   font-weight: bolder;
   font-size: 165%;
-  margin-top: -12px;
-  margin-left: 3px;
-  margin-right: 3px; }
+  margin-top: -10px; }
 
 .glyphicon-dashed-arrow-left:before {
   content: "\21E0"; }

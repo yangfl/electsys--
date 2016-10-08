@@ -7,7 +7,7 @@ function loggerInit (func, msg, method = 'debug',
       func, ...msg)
     if (alertCloseDelay) {
       return addAlert(func, msg.slice(0, msg.length - 1).join(''),
-        msg[msg.length - 1], method, alertCloseDelay)
+        msg[msg.length - 1], method, alertCloseDelay, curTime)
     }
   } else {
     console[method]('%c[%s] %c%s:', 'color: lime', curTime, 'color: orange',
@@ -68,25 +68,24 @@ function addAlert (func, msg, e, method, closeDelay, curTime) {
   }
   const section_alert = document.getElementById('alert')
   let id_alert = 'alert-' + curTime
-  section_alert.innerHTML +=
+  section_alert.insertAdjacentHTML('beforeend',
 `<div id="${id_alert}" class="alert alert-${className} fade in">
   <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
   <p><strong>${typeHint} from '${func}'</strong></p>
   <div class="alert-hint">
     ${msg.replace(/\n/g, '<br />')}
   </div>${e ? `
-  <pre>${e.statusText || e.stack || (typeof e === 'object' && JSON.stringify(e)) || e}</pre>` : ''}
-</div>`
+  <pre>${
+    e.statusText || e.stack || e.target && e.target.error ||
+    typeof e === 'object' && JSON.stringify(e) || e
+  }</pre>` : ''}
+</div>`)
   let div_alert = section_alert.lastElementChild
   if (typeof closeDelay === 'number') {
-    return [
-      div_alert, setTimeout(
-        // NOTE: I don't know why node was changed
-        () => $(document.getElementById(id_alert)).alert('close'),
-        closeDelay)
-    ]
+    div_alert.dataset.timeoutID = setTimeout(
+      () => $(div_alert).alert('close'), closeDelay)
   }
-  return [div_alert]
+  return div_alert
 }
 
 

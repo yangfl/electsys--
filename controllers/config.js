@@ -11,7 +11,7 @@ let config
               item[key] = changes[key].newValue
             }
           }
-          this.loaders.forEach(loader => loader(item))
+          this.loaders.forEach(loader => loader(item, false))
         }
       })
       this.bind()
@@ -95,8 +95,9 @@ let config
   }
 
   function saveList () {
-    config.set(
-      this.id, this.value.split(',').map(i => i.trim()).filter(i => i))
+    let list = this.value.split(',').map(i => i.trim()).filter(i => i)
+    config.set(this.id, list)
+    this.value = list.join(', ')
   }
 
   function saveText () {

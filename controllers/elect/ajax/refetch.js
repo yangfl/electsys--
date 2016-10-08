@@ -48,7 +48,8 @@ function responseErrorText (response) {
 function refetch (url, options = {credentials: 'include'},
     filter = refetch.default.filter,
     ticker = refetch.default.tickerFactory(url, options)) {
-  return fetch(url, options).then(handleResponseError)
+  return fetch(url instanceof Request ? url.clone() : url , options)
+    .then(handleResponseError)
     .then(response => Promise.resolve(filter(response.clone())).then(result =>
       result ? response : Promise.reject(new TypeError('filter failed'))))
     .catch(error => Promise.resolve(ticker(error)).then(wantsRetry =>

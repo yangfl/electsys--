@@ -19,7 +19,7 @@ function nodeTypeDesc (node) {
 
 
 function selectedType () {
-  if (window.location.hash.startsWith('#list')) {
+  if (mode.name == 'list') {
     let select_semester = document.getElementById('table-available-semester')
     return [[select_semester.options[select_semester.selectedIndex].value]]
   } else {
@@ -44,7 +44,7 @@ function selectedType () {
       let nodeType = nodeTypeDesc(target)
       nodeType.pop()
       let l_a = menu.getElementsByTagName('a')
-      if (rootTab.cache(nodeType).status === 'loaded') {
+      if ((rootTab.cache(nodeType) || {}).status === 'loaded') {
         l_a[0].style.display = 'block'
         l_a[1].style.display = 'none'
       } else {
@@ -64,10 +64,7 @@ function selectedType () {
 
   /* tab select */
   let button_type = document.querySelectorAll('#list-type .btn-type')
-  const CLASS_LOADING = [
-    'progress-bar', 'progress-bar-info',
-    'progress-bar-striped', 'progress-bar-active'
-  ]
+  const CLASS_LOADING = ['progress-bar-striped', 'progress-bar-active']
   function removeSelectedClass (button) {
     button.classList.remove('btn-info')
     button.classList.remove(...CLASS_LOADING)
@@ -92,19 +89,24 @@ function selectedType () {
       }
       this.classList.add('btn-info')
       let typeDesc = nodeTypeDesc(this)
-      if (rootTab.cache(typeDesc).status === 'loaded') {
+      let cachedTab = rootTab.cache(typeDesc)
+      if (cachedTab && cachedTab.status === 'loaded') {
+        // cached, draw table
         refreshAvailable()
       } else {
+        // prepare for loading
         this.classList.add(...CLASS_LOADING)
-        rootTab.type(typeDesc).then(
-          tab => {
+        if (!cachedTab || cachedTab.status !== 'loading') {
+          rootTab.type(typeDesc).then(tab => {
+            // loaded
             this.classList.remove(...CLASS_LOADING)
             updateUI(tab)
-          },
-          e => {
+          }, e => {
+            // failed
             removeSelectedClass(this)
             return loggerError('ajax', 'Error when parsing response', true)(e)
           }).then(refreshAvailable)
+        }
       }
     }
   }

@@ -2,20 +2,32 @@
 let lessonQueue = new Queue
 
 
-config.loaders.push(item => {
-  if (typeof item.ajax_post_interval === 'number' &&
-      typeof item.ajax_get_interval === 'number' &&
-      typeof item.ajax_power === 'number' &&
-      typeof item.ajax_retry === 'number') {
-    refetch.default = {
-      filter: pageFilter,
-      tickerFactory: (url, options) => steppingTicker(
-        (url.method || options.method) === 'POST' ?
-          item.ajax_post_interval : item.ajax_get_interval,
-        item.ajax_power, item.ajax_retry),
+config.loaders.push((item, hasAll) => {
+  if (item.ajax_post_interval || item.ajax_get_interval ||
+      item.ajax_power || item.ajax_retry) {
+    let setTicker = item => {
+      if (typeof item.ajax_post_interval === 'number' &&
+          typeof item.ajax_get_interval === 'number' &&
+          typeof item.ajax_power === 'number' &&
+          typeof item.ajax_retry === 'number') {
+        refetch.default = {
+          filter: pageFilter,
+          tickerFactory: (url, options) => steppingTicker(
+            (url.method || options.method) === 'POST' ?
+              item.ajax_post_interval : item.ajax_get_interval,
+            item.ajax_power, item.ajax_retry),
+        }
+      } else {
+        throw new TypeError('broken settings')
+      }
     }
-  } else {
-    throw new TypeError('broken settings')
+    if (hasAll) {
+      setTicker(item)
+    } else {
+      chrome.storage.sync.get([
+        'ajax_post_interval', 'ajax_get_interval', 'ajax_power', 'ajax_retry'
+      ], setTicker)
+    }
   }
   if (typeof item.ajax_get_interval === 'number') {
     Lesson.bsid.queue.defaultOptions = {

@@ -135,8 +135,8 @@ class Lesson {
           } else if (this[key] !== data[key]) {
             if (key != 'classroom' && key != 'building') {
               console.warn(
-                'in %s \nproperty %s: old value', this.fullref, key, this[key],
-                'confilcts with', data[key])
+                'in %s \n\'property\' %s: old value',
+                this.fullref, key, this[key], 'confilcts with', data[key])
             }
           }
         }
@@ -211,9 +211,12 @@ class Lesson {
     if (!this.hasOwnProperty('bsid')) {
       throw new TypeError('bsid unknown')
     }
+    loggerInit('lesson', 'remove' + this.fullref)
     return fetch(ELECT.remove(this.bsid), {credentials: 'include'})
-      .then(handleResponseError)
-      .then(() => window.dispatchEvent(new Event('login')))
+      .then(handleResponseError).then(() => {
+        loggerInit('lesson', this.fullref + 'removed')
+        window.dispatchEvent(new Event('login'))
+      })
   }
 
   /* helpers */
@@ -232,7 +235,7 @@ class Lesson {
         let i = l_record.length
         while (i--) {
           let record = l_record[i]
-          let fullref_split = Lesson.converters.splitFullref(record.fullref)
+          let fullref_split = this.splitFullref(record.fullref)
 
           let obj_semester = result[fullref_split[1]]
           if (!obj_semester) {
@@ -271,13 +274,11 @@ Lesson.bsid = {
             return resolve(new Lesson(event.target.result))
           } else {
             // remote fetch
-            return this.query(bsid)
-              .then(fullref => {
-                return Lesson.fromFullref(fullref, {bsid: bsid})
-              }, e => {
-                return loggerError('lesson', 'Error when fetch ' + bsid,
-                  true)(e)
-              })
+            return resolve(this.query(bsid).then(fullref => {
+              return Lesson.fromFullref(fullref, {bsid: bsid})
+            }, e => {
+              return loggerError('lesson', 'Error when fetch ' + bsid, true)(e)
+            }))
           }
         }
       })
@@ -326,10 +327,13 @@ Lesson.db = {
       let i = this.updateQueue.length
       loggerInit('lesson.db', 'group store start')
       let writeAll = () => {
-        if (this.updateQueue.length) {
-          store.put(this.updateQueue.shift()).onsuccess = writeAll
+        if (i) {
+          i--;
+          store.put(this.updateQueue[i]).onsuccess = writeAll
         } else {
-          loggerInit('lesson.db', 'group store end, ' + i + ' stored')
+          loggerInit('lesson.db',
+            'group store end, ' + this.updateQueue.length + ' stored')
+          this.updateQueue = []
           this.wrote.resolve()
           this.wrote = undefined
         }

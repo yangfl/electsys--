@@ -14,7 +14,7 @@ class TreeNode {
 
   get typeDescPath () {
     if (this.parent) {
-      return this.parent.TypeDescPath.concat(this.typeDesc)
+      return this.parent.typeDescPath.concat(this.typeDesc)
     } else {
       return []
     }
@@ -56,31 +56,34 @@ class TreeNode {
   }
 
   load (reload) {
-    if (this.loaded === undefined || this.status === 'failed') {
-      if (this.status !== 'loaded') {
-        this.status = 'loading'
-        this.loaded = this.parent.load().then(() => this._load()).then(() => {
-          this.status = 'loaded'
-          return this
-        })
-        this.loaded.catch(e => {
-          this.status = 'failed'
-        })
-      } else {
-        return Promise.resolve(this)
-      }
+    if (!this.parent || this.status === 'loading' ||
+        this.status === 'loaded' && !reload) {
+      return this.loaded || Promise.resolve(this)
+    }
+    if (this.status !== 'loaded' || reload) {
+      this.status = 'loading'
+      this.loaded = this.parent.load(reload).then(() => this._load())
+      .then(() => {
+        this.status = 'loaded'
+        return this
+      })
+      this.loaded.catch(e => {
+        this.status = 'failed'
+      })
     }
     return this.loaded
   }
 
   type (typeDescPath, wantsPredict) {
-    if (this.types === undefined) {
-      throw new TypeError('no type available')
+    let nextType
+    let nextTypeDescPath
+    if (Array.isArray(typeDescPath)) {
+      nextType = typeDescPath[0]
+      nextTypeDescPath = typeDescPath.slice(1)
+    } else {
+      nextType = typeDescPath
     }
-
-    let nextType = typeDescPath[0]
-    let nextTypeDescPath = typeDescPath.slice(1)
-    if (!(nextType in this.types)) {
+    if (!this.hasType(nextType)) {
       return Promise.reject(new TypeError(`invalid type ${typeDescPath}`))
     }
 
@@ -91,7 +94,7 @@ class TreeNode {
     } else {
       p = nextTab.load()
     }
-    if (nextTypeDescPath.length) {
+    if (nextTypeDescPath && nextTypeDescPath.length) {
       p = p.then(tab => tab.type(nextTypeDescPath, wantsPredict))
     }
     return p
@@ -103,9 +106,16 @@ class TreeNode {
       if (typeDesc[i] in curTab._tabCache) {
         curTab = curTab._tabCache[typeDesc[i]]
       } else {
-        return {}
+        return
       }
     }
     return curTab
+  }
+
+  hasType (nextType) {
+    if (!this.types) {
+      throw new TypeError('no type available')
+    }
+    return nextType in this.types
   }
 }

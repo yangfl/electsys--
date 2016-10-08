@@ -19,7 +19,7 @@ deferredPool.tasks.storage_lesson = deferredPool.start
     request_lesson.onsuccess = event => {
       db_lesson = event.target.result
       db_lesson.onerror = function (event) {
-        loggerError('init.storage.lesson')(event.target.error)
+        loggerError('storage.lesson')(event.target.error)
       }
       if (!db_lesson.objectStoreNames.contains('lesson')) {
         loggerInit('init.storage.lesson',
@@ -51,15 +51,13 @@ deferredPool.tasks.storage_tab = deferredPool.start
     request_tab.onsuccess = event => {
       try {
         db_tab = event.target.result
-        db_tab.onerror = function (event) {
-          loggerError('init.storage.tab')(event.target.error)
-        }
         return resolve(sdtleft.loaded)
       } catch (e) {
         return reject(e)
       }
     }
-  })).then(() => {
+  }))
+  .then(() => {
     let absSemester = sdtleft.info.toString()
     if (!db_tab.objectStoreNames.contains(absSemester)) {
       return new Promise((resolve, reject) => {
@@ -72,7 +70,7 @@ deferredPool.tasks.storage_tab = deferredPool.start
           db_tab = event.target.result
 
           let store = db_tab.createObjectStore(
-            absSemester, { autoIncrement: true })
+            absSemester, {keyPath: ['from', 'to']})
           store.createIndex('from', 'from')
           store.createIndex('to', 'to')
           loggerInit('init.storage.lesson',
@@ -80,38 +78,43 @@ deferredPool.tasks.storage_tab = deferredPool.start
         }
 
         request_tab.onsuccess = event => {
-          db_tab = event.target.result
-
-          db_tab.onerror = function (event) {
-            loggerError('init.storage.tab')(event.target.error)
+          try {
+            db_tab = event.target.result
+            return resolve(sdtleft.loaded)
+          } catch (e) {
+            return reject(e)
           }
-
-          if (!db_tab.objectStoreNames.contains(absSemester)) {
-            loggerInit('init.storage.tab',
-              'Broken database: no objectStore \'' + absSemester + '\'',
-              'error')
-            return reject()
-          }
-
-          let store = db_tab.transaction(absSemester).objectStore(absSemester)
-          if (!store.indexNames.contains('from')) {
-            loggerInit('init.storage.tab',
-              'Broken database: index \'from\' missing on objectStore \'' +
-                absSemester + '\'',
-              'error')
-            return reject()
-          }
-          if (!store.indexNames.contains('to')) {
-            loggerInit('init.storage.tab',
-              'Broken database: index \'to\' missing on objectStore \'' +
-                absSemester + '\'',
-              'error')
-            return reject()
-          }
-
-          return resolve()
         }
       })
+    }
+  })
+  .then(() => {
+    let absSemester = sdtleft.info.toString()
+    db_tab.onerror = function (event) {
+      loggerError('storage.tab')(event.target.error)
+    }
+
+    if (!db_tab.objectStoreNames.contains(absSemester)) {
+      loggerInit('init.storage.tab',
+        'Broken database: no objectStore \'' + absSemester + '\'',
+        'error')
+      return Promise.reject()
+    }
+
+    let store = db_tab.transaction(absSemester).objectStore(absSemester)
+    if (!store.indexNames.contains('from')) {
+      loggerInit('init.storage.tab',
+        'Broken database: index \'from\' missing on objectStore \'' +
+          absSemester + '\'',
+        'error')
+      return Promise.reject()
+    }
+    if (!store.indexNames.contains('to')) {
+      loggerInit('init.storage.tab',
+        'Broken database: index \'to\' missing on objectStore \'' +
+          absSemester + '\'',
+        'error')
+      return Promise.reject()
     }
   })
   .then(

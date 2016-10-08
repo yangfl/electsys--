@@ -28,7 +28,7 @@
       mode.debug.fillInfo()
       window.selectedType = () => [[]]
       window.dispatchEvent(new Event('login'))
-      deferredPool.finished.then(Lesson.selectAll).then(result => {
+      deferredPool.finished.then(() => Lesson.selectAll()).then(result => {
         let select_semester = document.getElementById('table-available-semester')
         Object.keys(result).forEach(semester => {
           let option = document.createElement('option')
