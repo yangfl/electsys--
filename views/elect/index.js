@@ -16,16 +16,17 @@ loggerInit('init', 'libraries loaded')
       span_loading.style.display = 'inline'
       let [yaerStart, yearEnd, semester] =
         select_fetch.options[select_fetch.selectedIndex].value.split('-')
-      Lesson.fetch(yaerStart + yearEnd, semester).then(() => {
+      Lesson.fetch(yaerStart + '-' + yearEnd, semester).then(() => {
         span_loading.style.display = 'none'
         this.disabled = false
         span_loaded.style.display = 'inline'
         setTimeout(() => {
           span_loaded.style.display = 'none'
         }, 3000)
-      }, () => {
+      }, e => {
         span_loading.style.display = 'none'
         this.disabled = false
+        loggerError('ajax.query')(e)
       })
     })
 }

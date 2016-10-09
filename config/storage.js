@@ -34,7 +34,7 @@ function initSyncStorage () {
         color_confilcted: '#c96',
         color_choosen: '#faf',
         color_unavailable: 'lightslategrey',
-        color_hover: '#fc6',
+        color_hover: '#f5f5f5',  // '#fc6'
 
         ajax_get_interval: 1475,
         ajax_post_interval: 3000,

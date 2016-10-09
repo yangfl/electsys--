@@ -17,13 +17,15 @@ let rootTab
 
     _preload () {
       return new Promise(resolve => {
+        let matched = false
         this.constructor.db.ro().index('from')
           .openCursor(IDBKeyRange.only(this.typeDescPath))
           .onsuccess = event => {
             let cursor = event.target.result
             if (!cursor) {
-              return resolve(this)
+              return resolve(matched)
             }
+            matched = true
             let token = cursor.value.to
             if (isEntry(token)) {
               if (this.entries === undefined) {
@@ -230,6 +232,9 @@ let rootTab
       return Promise.reject(new TypeError('nothing to submit'))
     }
 
+    /**
+     * @param {string} nextType
+     */
     _nextTabClass (nextType) {
       switch (nextType) {
         case 'speltyCommonCourse':
@@ -241,6 +246,9 @@ let rootTab
       }
     }
 
+    /**
+     * @returns {Request}
+     */
     _nextRequest (name) {
       return new Request(ELECT.tab(name), {credentials: 'include'})
     }
@@ -362,6 +370,24 @@ let rootTab
           [this.node.querySelector('input[value=选定此教师]').name]: '选定此教师',
         })), undefined, () => false)
       .then(() => window.dispatchEvent(new Event('login')))
+    }
+
+    guessEntry () {
+      if (this.status !== 'mismatched') {
+        return this.entries
+      }
+      return new Promise(resolve => {
+        let entries = []
+        Lesson.db.ro().index('ref').openCursor(IDBKeyRange.only(this.typeDesc))
+          .onsuccess = event => {
+            let cursor = event.target.result
+            if (!cursor) {
+              return resolve(entries)
+            }
+            entries.push(new Lesson(cursor.value))
+            return cursor.continue()
+          }
+      })
     }
   }
 

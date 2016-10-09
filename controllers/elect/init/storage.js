@@ -11,6 +11,7 @@ deferredPool.tasks.storage_lesson = deferredPool.start
 
       if (!db_lesson.objectStoreNames.contains('lesson')) {
         let store = db_lesson.createObjectStore('lesson', {keyPath: 'fullref'})
+        store.createIndex('ref', 'ref', { unique: false })
         store.createIndex('bsid', 'bsid', { unique: true })
         loggerInit('init.storage.lesson', 'objectStore \'lesson\' created')
       }
@@ -26,8 +27,15 @@ deferredPool.tasks.storage_lesson = deferredPool.start
           'Broken database: no objectStore \'lesson\'', 'error')
         return reject()
       }
-      if (!db_lesson.transaction('lesson').objectStore('lesson')
-          .indexNames.contains('bsid')) {
+
+      let store = db_lesson.transaction('lesson').objectStore('lesson')
+      if (!store.indexNames.contains('ref')) {
+        loggerInit('init.storage.lesson',
+          'Broken database: index \'ref\' missing on objectStore \'lesson\'',
+          'error')
+        return reject()
+      }
+      if (!store.indexNames.contains('bsid')) {
         loggerInit('init.storage.lesson',
           'Broken database: index \'bsid\' missing on objectStore \'lesson\'',
           'error')

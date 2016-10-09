@@ -16,6 +16,10 @@ let dataTable_arrange
       chrome.i18n.getMessage('dataTable_language_url')
 
     /* table_available */
+    const CLASS_LOADING = [
+      'loading', 'progress-bar-striped', 'progress-bar-active'
+    ]
+
     const table_available = document.getElementById('table-available')
     dataTable_available = $(table_available).DataTable({
       autoWidth: false,
@@ -50,18 +54,26 @@ let dataTable_arrange
         {data: 'credit'},
         {data: 'hour'},
       ],
+      createdRow (row, data, dataIndex) {
+        let cachedTab = data.parent.cache(data.ref)
+        if (cachedTab) {
+          if (cachedTab.status === 'loading') {
+            row.classList.add(...CLASS_LOADING)
+          }
+        }
+      },
       order: [],
       language: {url: DATATABLE_LANGUAGE_URL},
     })
 
     // available row event listener (note the placeholder)
     let tbody_available = table_available.tBodies[0]
-    const CLASS_LOADING = [
-      'loading', 'progress-bar-striped', 'progress-bar-active'
-    ]
     const $arrange_modal = $('#select-arrange')
     tbody_available.addEventListener('click', event => {
       let tr = event.target.closest('tr')
+      if (tr.classList.contains('loading')) {
+        return
+      }
       let entryData = dataTable_available.row(tr).data()
       if (entryData) {
         tr.classList.add(...CLASS_LOADING)
@@ -214,28 +226,81 @@ let dataTable_arrange
  */
 function refreshAvailable (reload) {
   dataTable_available.clear()
+
+  let l_selected_type = selectedType()
+  if (l_selected_type.length === 0) {
+    dataTable_available.draw()
+    return Promise.resolve()
+  }
+
   if (reload) {
     // draw an empty table to indicate reloading
     dataTable_available.draw()
   }
-  return Promise.all(selectedType().map(reload ?
+
+  return Promise.all(l_selected_type.map(reload ?
     typeDesc => rootTab.type(typeDesc).then(tab => tab.load(true)) :
     typeDesc => rootTab.type(typeDesc))
   ).then(l_tab => {
-    // selectedType can be empty
-    let i = l_tab.length
-    if (i) {
-      let last_tab = l_tab[i - 1]
-      scheduleTable.show(last_tab.scheduleTable)
-    }
-
     // add entries to table
+    let i = l_tab.length
     while (i--) {
       if (l_tab[i].entries) {
         dataTable_available.rows.add(Object.values(l_tab[i].entries))
       }
     }
     dataTable_available.draw()
+
+    // add schedule table
+    let last_tab = l_tab[l_tab.length - 1]
+    scheduleTable.show(last_tab.scheduleTable)
+
+    // detect confilcts
+    return Promise.all(last_tab.bsids.map(bsid => Lesson.fromBsid(bsid)))
+      .then(l_selected_lesson => {
+        let q = []
+        dataTable_available.rows().every(function () {
+          let entryData = this.data()
+          let tr = this.node()
+          if (entryData.choosen) {
+            tr.classList.add('choosen')
+            return
+          }
+          q.push(entryData.parent.type(entryData.ref, true)
+            .then(tab => tab.guessEntry().then(_l_ref_lesson => {
+              let l_ref_lesson = _l_ref_lesson.filter(lesson => lesson.schedule)
+
+              let entryData = this.data()
+              let tr = this.node()
+
+              if (l_ref_lesson.length === 0) {
+                if (tab.status === 'mismatched') {
+                  // no record in db
+                } else {
+                  tr.classList.add('unavailable')
+                }
+                return
+              }
+
+              if (l_ref_lesson.some(lesson => bsid.includes(lesson))) {
+                tr.classList.add('choosen')
+                return
+              }
+
+              for (let i = l_ref_lesson.length; i--;) {
+                let ref_lesson = l_ref_lesson[i]
+                for (let j = l_selected_lesson.length; j--;) {
+                  let selected_lesson = l_selected_lesson[j]
+                  if (ref_lesson.conflictsWith(selected_lesson)) {
+                    tr.classList.add('confilcted')
+                    return
+                  }
+                }
+              }
+            })))
+        })
+        return Promise.all(q)
+      }).then(() => dataTable_available.draw()).then(() => l_tab)
   })
 }
 

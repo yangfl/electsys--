@@ -1,5 +1,10 @@
 'use strict'
 /* type */
+/**
+ * get type desc by dom node
+ * @param  {Element} node
+ * @returns {Array.<string>}
+ */
 function nodeTypeDesc (node) {
   if (node.dataset.majorType) {
     // button
@@ -18,6 +23,9 @@ function nodeTypeDesc (node) {
 }
 
 
+/**
+ * @returns {Array.<Array.<string>>}
+ */
 function selectedType () {
   if (mode.name == 'list') {
     let select_semester = document.getElementById('table-available-semester')
@@ -44,7 +52,7 @@ function selectedType () {
       let nodeType = nodeTypeDesc(target)
       nodeType.pop()
       let l_a = menu.getElementsByTagName('a')
-      if ((rootTab.cache(nodeType) || {}).status === 'loaded') {
+      if (rootTab.cacheStauts(nodeType) === 'loaded') {
         l_a[0].style.display = 'block'
         l_a[1].style.display = 'none'
       } else {
@@ -122,6 +130,10 @@ function selectedType () {
   let tbody_limited = document.getElementById('table-limited').tBodies[0]
   let modal_limited = document.getElementById('select-limited')
   let modal_out = document.getElementById('select-out')
+  /**
+   * @param  {Element} tab
+   * @param  {bool} [forceOpen=false]
+   */
   function updateUI (tab, forceOpen) {
     // detectFreshman
     if (btn_freshman) {

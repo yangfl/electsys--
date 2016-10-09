@@ -31,7 +31,7 @@ function responseText (response) {
 
 /**
  * @param {Response} response
- * @returns {string}
+ * @returns {string} data
  */
 function responseErrorText (response) {
   handleResponseError(response)

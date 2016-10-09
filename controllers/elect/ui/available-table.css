@@ -1,7 +1,7 @@
-.table-entry > tbody > tr:hover > td:not(:only-child) {
+.table-entry > tbody > tr:not(.loading):hover > td:not(:only-child) {
   cursor: pointer; }
 
-.table-entry > tbody > tr.loading,
+.table-entry .loading,
 .table-entry > tbody > tr:not(.loading):hover > td:not(:only-child) {
   background-color: var(--color-hover); }
 

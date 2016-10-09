@@ -41,8 +41,12 @@ class TreeNode {
       if (this.status === 'pending') {
         this.status = 'preloading'
         this.preloaded = Promise.resolve()
-          .then(() => this._preload()).then(() => {
-            this.status = 'preloaded'
+          .then(() => this._preload()).then(cacheMatched => {
+            if (cacheMatched === false) {
+              this.status = 'mismatched'
+            } else {
+              this.status = 'preloaded'
+            }
             return this
           })
         this.preloaded.catch(e => {
@@ -100,16 +104,29 @@ class TreeNode {
     return p
   }
 
-  cache (typeDesc = []) {
+  /**
+   * get cached node
+   * @param {(Array.<string>|string)} [typeDescPath]
+   * @returns {?TreeNode}
+   */
+  cache (typeDescPath = []) {
+    let _typeDescPath = typeDescPath
+    if (typeof _typeDescPath === 'string') {
+      _typeDescPath = [_typeDescPath]
+    }
     let curTab = this
-    for (let i = 0; i < typeDesc.length; i++) {
-      if (typeDesc[i] in curTab._tabCache) {
-        curTab = curTab._tabCache[typeDesc[i]]
+    for (let i = 0, k = _typeDescPath.length; i < k; i++) {
+      if (_typeDescPath[i] in curTab._tabCache) {
+        curTab = curTab._tabCache[_typeDescPath[i]]
       } else {
         return
       }
     }
     return curTab
+  }
+
+  cacheStauts (typeDescPath) {
+    return this.cache(typeDescPath).status || 'pending'
   }
 
   hasType (nextType) {

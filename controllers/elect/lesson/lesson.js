@@ -84,12 +84,15 @@ class Lesson {
     this.constructor.cache[data.fullref] = this
 
     for (let i = 0, k = this.constructor.PROPERTIES.length; i < k; i++) {
-      let property = this.constructor.PROPERTIES[i]
+      let key = this.constructor.PROPERTIES[i]
       // db will return null for empty values
-      this[property] = data[property]
-      if (this[property] === null) {
-        this[property] = undefined
+      this[key] = data[key]
+      if (this[key] === null) {
+        this[key] = undefined
       }
+    }
+    if (!this.ref) {
+      this.ref = this.constructor.splitFullref(this.fullref)[2]
     }
   }
 
@@ -97,17 +100,15 @@ class Lesson {
     return this.constructor.splitFullref(this.fullref)[1]
   }
 
-  get ref () {
-    return this.constructor.splitFullref(this.fullref)[2]
-  }
-
   _parse () {
     try {
       this.schedule = this.constructor.scheduleParser.parse(
-        this.scheduleDesc.replace(
-          '不安排教室 不安排教师',
-          '(' + this.scheduleDesc.split('\r\n', 1)[0].match(/\d+/g).join('-') +
-          '周)'))
+        this.scheduleDesc.includes('不安排教室 不安排教师') ?
+          this.scheduleDesc.replace(
+            '不安排教室 不安排教师',
+            '(' + this.scheduleDesc.substr(
+              0, this.scheduleDesc.indexOf('\r\n')).match(/\d+/g).join('-') +
+            '周)') : this.scheduleDesc)
     } catch (e) {
       console.warn(this.scheduleDesc.replace(/\r/g, '\\r'))
       throw e
@@ -274,11 +275,9 @@ Lesson.bsid = {
             return resolve(new Lesson(event.target.result))
           } else {
             // remote fetch
-            return resolve(this.query(bsid).then(fullref => {
-              return Lesson.fromFullref(fullref, {bsid: bsid})
-            }, e => {
-              return loggerError('lesson', 'Error when fetch ' + bsid, true)(e)
-            }))
+            return resolve(this.query(bsid).then(
+              fullref => Lesson.fromFullref(fullref, {bsid: bsid}),
+              loggerError('lesson', 'Error when fetch ' + bsid, true)))
           }
         }
       })
@@ -454,8 +453,10 @@ Lesson.STRUCT = {
   jsdm: 'classroom',
   jxlmc: 'building',
 }
-Lesson.PROPERTIES = Object.values(Lesson.STRUCT)
-Lesson.PROPERTIES.unshift('bsid')
-Lesson.PROPERTIES.push('schedule')
+Lesson.PROPERTIES = [
+  'fullref', 'ref', 'bsid', 'schedule',
+  'academy', 'teacher', 'title', 'name', 'hour', 'credit', 'scheduleDesc',
+  'note', 'grade', 'year', 'semester', 'classroom', 'building',
+]
 Lesson.cache = {}
 Lesson.groupAssign = false
