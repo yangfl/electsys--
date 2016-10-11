@@ -26,22 +26,10 @@ $.fn.dataTable.ext.order['dom-priority'] = function (settings, col) {
 }
 
 
-deferredPool.tasks.tablecolor = deferredPool.start
-  .then(() => new Promise((resolve, reject) => {
-    const COLOR_TYPE = ['color_head', 'color_not_full', 'color_full',
-      'color_confilcted', 'color_choosen', 'color_hover', 'color_unavailable']
-    chrome.storage.sync.get(COLOR_TYPE, item => {
-      try {
-        for (let key of COLOR_TYPE) {
-          document.body.style.setProperty('--' + key.replace(/_/g, '-'), item[key])
-        }
-        return resolve()
-      } catch (e) {
-        return reject(e)
-      }
-    })
-  }))
-  .then(
-    () => loggerInit('init.available_table', 'color settings loaded'),
-    loggerError('init.datatable',
-      'Error when loading color settings, UI may be affected.'))
+config.loaders.push((item, hasAll) => {
+  for (let key in item) {
+    if (key.startsWith('color_')) {
+      document.body.style.setProperty('--' + key.replace(/_/g, '-'), item[key])
+    }
+  }
+})

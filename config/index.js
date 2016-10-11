@@ -326,9 +326,6 @@ $(document).ready(() => {
           $(this).children(':first').removeClass('glyphicon-saved')
           $(this).children(':first').addClass('glyphicon-save')
           $(this).children(':last').text('Save') }, MSG_HIDE_TIMEOUT) }) })
-
-  $('.config-color').on('input', function () {
-    $(this).css('background-color', this.value) })
   /* looks and feel */
 
 

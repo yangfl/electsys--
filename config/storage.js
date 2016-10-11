@@ -29,12 +29,13 @@ function initSyncStorage () {
         exclude_words: ['留学生', '民族班', '保健班'],
 
         color_head: '#bc8',
+        color_loading: '#fc6',
         color_not_full: 'lightgreen',
         color_full: 'lightcoral',
         color_confilcted: '#c96',
         color_choosen: '#faf',
         color_unavailable: 'lightslategrey',
-        color_hover: '#f5f5f5',  // '#fc6'
+        color_hover: '#f5f5f5',
 
         ajax_get_interval: 1475,
         ajax_post_interval: 3000,

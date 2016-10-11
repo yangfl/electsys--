@@ -20,7 +20,7 @@
     <link href="/vendor/DataTables-1.10.12/css/dataTables.bootstrap.min.css" rel="stylesheet" />
     <link href="/vendor/bootstrap-pure-tooltip.css" rel="stylesheet" />
     <link href="/vendor/contextmenu/contextmenu.css" rel="stylesheet" />
-    <link href="/controllers/elect/ui/available-table.css" rel="stylesheet" />
+    <link href="/controllers/elect/ui/color.css" rel="stylesheet" />
     <link href="/controllers/elect/ui/schedule-table.css" rel="stylesheet" />
     <link href="/views/elect/index.css" rel="stylesheet" />
   </head>
@@ -229,6 +229,7 @@
         <table id="table-available" class="table table-bordered table-entry">
           <thead>
             <tr>
+              <th class="th-sort">&nbsp;</th>
               <th class="th-name">名称</th>
               <th class="th-ref">代码</th>
               <th class="th-type">性质</th>
@@ -248,6 +249,7 @@
                 <table id="table-arrange" class="table table-bordered table-entry">
                   <thead>
                     <tr>
+                      <th class="th-sort">&nbsp;</th>
                       <th class="th-teacher">教师</th>
                       <th class="th-fullref">课号</th>
                       <th class="th-hour">学时</th>
@@ -360,7 +362,76 @@
                           id="exclude_words" />
                     </div>
                   </div>
+                </div>
+
+                <h3 data-i18n="config_color"></h3>
+                <div class="form-horizontal">
                   <div class="form-group">
+                    <label class="control-label col-sm-2" for="color_head"
+                        data-i18n="config_color_head"></label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control config-sync config-color"
+                          id="color_head" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="color_loading"
+                        data-i18n="config_color_loading"></label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control config-sync config-color"
+                          id="color_loading" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="color_not_full"
+                        data-i18n="config_color_not_full"></label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control config-sync config-color"
+                          id="color_not_full" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="color_full"
+                        data-i18n="config_color_full"></label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control config-sync config-color"
+                          id="color_full" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="color_confilcted"
+                        data-i18n="config_color_confilcted"></label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control config-sync config-color"
+                          id="color_confilcted" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="color_choosen"
+                        data-i18n="config_color_choosen"></label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control config-sync config-color"
+                          id="color_choosen" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="color_hover"
+                        data-i18n="config_color_hover"></label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control config-sync config-color"
+                          id="color_hover" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="color_unavailable"
+                        data-i18n="config_color_unavailable"></label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control config-sync config-color"
+                          id="color_unavailable" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <a class="btn" href="http://javier.xyz/cohesive-colors/" target="_blank" data-i18n="config_color_picker"></a>
                     <a type="button" class="btn btn-default pull-right"
                         href="/config/index.html" target="_blank">Other settings</a>
                   </div>
@@ -408,7 +479,7 @@
       <script src="/controllers/elect/mode/debug.js"></script>
       <script src="/controllers/elect/mode/default.js"></script>
       <script src="/controllers/elect/mode/list.js"></script>
-      <script src="/controllers/elect/ui/available-table.js"></script>
+      <script src="/controllers/elect/ui/color.js"></script>
       <script src="/controllers/elect/ui/dataTables.js"></script>
       <script src="/controllers/elect/ui/schedule-table.js"></script>
       <script src="/controllers/elect/ui/shortcut.js"></script>

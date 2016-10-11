@@ -151,33 +151,6 @@
   "config_looks_navbar_edit_blank": {
     "message": "Open in new tab"
   },
-  "config_looks_color_title": {
-    "message": "Table"
-  },
-  "config_looks_color_picker": {
-    "message": "Color picker"
-  },
-  "config_looks_color_head": {
-    "message": "Head"
-  },
-  "config_looks_color_not_full": {
-    "message": "Not full"
-  },
-  "config_looks_color_full": {
-    "message": "Full"
-  },
-  "config_looks_color_confilcted": {
-    "message": "Confilcted"
-  },
-  "config_looks_color_choosen": {
-    "message": "Choosen"
-  },
-  "config_looks_color_hover": {
-    "message": "Hover"
-  },
-  "config_looks_color_unavailable": {
-    "message": "Unavailable"
-  },
 
   "config_advanced_warning": {
     "message": "WARNING: Do not change these until you know exactly what you are doing."
@@ -393,6 +366,38 @@
   },
   "elect_config_ajax_retry": {
     "message": "Max retry"
+  },
+
+
+  "elect_config_color": {
+    "message": "Color"
+  },
+  "elect_config_color_picker": {
+    "message": "Color picker"
+  },
+  "elect_config_color_head": {
+    "message": "Head"
+  },
+  "elect_config_color_loading": {
+    "message": "Loading"
+  },
+  "elect_config_color_not_full": {
+    "message": "Not full"
+  },
+  "elect_config_color_full": {
+    "message": "Full"
+  },
+  "elect_config_color_confilcted": {
+    "message": "Confilcted"
+  },
+  "elect_config_color_choosen": {
+    "message": "Choosen"
+  },
+  "elect_config_color_hover": {
+    "message": "Hover"
+  },
+  "elect_config_color_unavailable": {
+    "message": "Unavailable"
   },
 
   "elect_config_check_on_hover": {

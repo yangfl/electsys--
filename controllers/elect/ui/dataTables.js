@@ -25,6 +25,11 @@ let dataTable_arrange
       autoWidth: false,
       columns: [
         {
+          data: null,
+          defaultContent: '',
+          orderDataType: 'dom-priority',
+        },
+        {
           data: 'name',
           render (data, type, row) {
             if (row.grade) {
@@ -62,7 +67,6 @@ let dataTable_arrange
           }
         }
       },
-      order: [],
       language: {url: DATATABLE_LANGUAGE_URL},
     })
 
@@ -92,7 +96,9 @@ let dataTable_arrange
     tbody_available.addEventListener('mouseover', event => {
       let entryData = dataTable_available.row(event.target.closest('tr')).data()
       if (entryData) {
-        // TODO
+        entryData.parent.type(entryData.ref, true)
+          .then(arrangeTab => arrangeTab.guessEntry())
+          .then(scheduleTable.preview.drawEntries)
       }
     })
 
@@ -143,6 +149,11 @@ let dataTable_arrange
       autoWidth: false,
       columns: [
         {
+          data: null,
+          defaultContent: '',
+          orderDataType: 'dom-priority',
+        },
+        {
           data: 'teacher',
           render (data, type, row) {
             return TEACHER.render(row.teacher, row.title)
@@ -173,7 +184,6 @@ let dataTable_arrange
           defaultContent: '',
         },
       ],
-      order: [],
       paging: false,
       language: {url: DATATABLE_LANGUAGE_URL},
     })
@@ -253,7 +263,7 @@ function refreshAvailable (reload) {
 
     // add schedule table
     let last_tab = l_tab[l_tab.length - 1]
-    scheduleTable.show(last_tab.scheduleTable)
+    scheduleTable.table.fill(last_tab.scheduleTable)
 
     // detect confilcts
     return Promise.all(last_tab.bsids.map(bsid => Lesson.fromBsid(bsid)))
@@ -267,8 +277,13 @@ function refreshAvailable (reload) {
             return
           }
           q.push(entryData.parent.type(entryData.ref, true)
-            .then(tab => tab.guessEntry().then(_l_ref_lesson => {
-              let l_ref_lesson = _l_ref_lesson.filter(lesson => lesson.schedule)
+            .then(tab => tab.guessEntry().then(obj_ref_lesson => {
+              let l_ref_lesson = []
+              for (let fake_bsid in obj_ref_lesson) {
+                if (obj_ref_lesson[fake_bsid].schedule) {
+                  l_ref_lesson.push(obj_ref_lesson[fake_bsid])
+                }
+              }
 
               let entryData = this.data()
               let tr = this.node()
@@ -282,7 +297,8 @@ function refreshAvailable (reload) {
                 return
               }
 
-              if (l_ref_lesson.some(lesson => bsid.includes(lesson))) {
+              if (l_ref_lesson.some(
+                  lesson => last_tab.bsids.includes(lesson))) {
                 tr.classList.add('choosen')
                 return
               }

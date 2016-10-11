@@ -11,6 +11,8 @@
 #topbar-schedule:hover {
   opacity: .8; }
 
+
+/* container */
 #container-schedule {
   display: none;
   -webkit-text-fill-color: transparent; }
@@ -78,6 +80,12 @@
   cursor: pointer;
   text-decoration: underline; }
 
+.preview {
+  position: absolute;
+  background-color: var(--color-loading); }
+
+
+/* handler */
 #handler-schedule {
   float: left;
   min-width: 15%;

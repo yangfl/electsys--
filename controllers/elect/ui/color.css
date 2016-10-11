@@ -1,9 +1,8 @@
-.table-entry > tbody > tr:not(.loading):hover > td:not(:only-child) {
-  cursor: pointer; }
-
-.table-entry .loading,
-.table-entry > tbody > tr:not(.loading):hover > td:not(:only-child) {
+.table-entry > tbody > tr:not(.loading):hover {
   background-color: var(--color-hover); }
+
+.table-entry .loading {
+  background-color: var(--color-loading); }
 
 .table-entry .not-full {
   background-color: var(--color-not-full); }
@@ -19,6 +18,12 @@
 
 .table-entry .unavailable {
   background-color: var(--color-unavailable); }
+
+.table-entry > tbody > tr {
+  cursor: pointer; }
+
+.table-entry .dataTables_empty {
+  cursor: auto; }
 
 .table-entry .full, .table-entry .confilcted, .table-entry .unavailable {
   cursor: not-allowed;

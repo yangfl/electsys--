@@ -6,8 +6,7 @@
   ],
   "loadEagerly": [
     "controllers/*.js",
-    "controllers/elect/*/*.js",
-    "vendor/*.js"
+    "controllers/elect/*/*.js"
   ],
   "plugins": {}
 }

@@ -23,7 +23,7 @@
       document.getElementById('list-type').style.display = 'none'
       document.getElementById('btn-result').style.display = 'none'
       deferredPool.start.resolve()
-      scheduleTable.show()
+      scheduleTable.table.fill()
 
       mode.debug.fillInfo()
       window.selectedType = () => [[]]

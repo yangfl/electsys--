@@ -18,16 +18,30 @@ let rootTab
     _preload () {
       return new Promise(resolve => {
         let matched = false
+        let q = []
         this.constructor.db.ro().index('from')
           .openCursor(IDBKeyRange.only(this.typeDescPath))
           .onsuccess = event => {
             let cursor = event.target.result
             if (!cursor) {
-              return resolve(matched)
+              return resolve(Promise.all(q).then(l_lesson => {
+                if (l_lesson.length) {
+                  if (this.entries === undefined) {
+                    this.entries = {}
+                  }
+                  for (let i = 0, k = l_lesson.length; i < k; i++) {
+                    let lesson = l_lesson[i]
+                    this.entries[lesson.bsid] = lesson
+                  }
+                }
+                return matched
+              }))
             }
             matched = true
             let token = cursor.value.to
-            if (isEntry(token)) {
+            if (!isNaN(token)) {
+              q.push(Lesson.fromBsid(Number(token)))
+            } else if (isEntry(token)) {
               if (this.entries === undefined) {
                 this.entries = {}
               }
@@ -377,14 +391,15 @@ let rootTab
         return this.entries
       }
       return new Promise(resolve => {
-        let entries = []
+        let entries = {}
+        let i = -1
         Lesson.db.ro().index('ref').openCursor(IDBKeyRange.only(this.typeDesc))
           .onsuccess = event => {
             let cursor = event.target.result
             if (!cursor) {
               return resolve(entries)
             }
-            entries.push(new Lesson(cursor.value))
+            entries[cursor.value.bsid || i--] = new Lesson(cursor.value)
             return cursor.continue()
           }
       })

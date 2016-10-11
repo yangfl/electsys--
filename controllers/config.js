@@ -81,7 +81,8 @@ let config
                 node.value = item[node.id] || ''
               }
               if (node.classList.contains('config-color')) {
-                node.style.backgroundColor = node.value
+                node.style.backgroundColor =
+                  'var(--' + node.id.replace(/_/g, '-') + ')'
               }
           }
         }

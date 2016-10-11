@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Electsys#",
-  "version": "2.0.0",
+  "version": "0.2.0.0",
   "description": "__MSG_manifest_description__",
   "homepage_url": "https://github.com/yangfl/electsys--",
   "icons": {
@@ -32,7 +32,7 @@
 
   "content_scripts": [
     {
-      "matches": ["http://202.120.52.55/pe/student/addexpe.aspx"],
+      "matches": ["http://202.120.52.55/pe/student/addexpe.aspxa"],
       "js": [
         "vendor/jquery-3.1.0.min.js",
         "views/other/physics.js"
