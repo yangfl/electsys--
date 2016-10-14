@@ -94,24 +94,45 @@ let scheduleTable = {
         scheduleTable.preview.clear()
       }
 
-      for (let [week_skip, week_start, week_end,
-                dow, lesson_start, lesson_end] of lesson.schedule) {
-        let $tr_start = $(nodeTable).find('tr').eq(1 + lesson_start)
-        let $tr_end = $(nodeTable).find('tr').eq(lesson_end)
-        let $td_dow = $(nodeTable).find('tr:first').children().eq(dow)
+      let cr_container = scheduleTable.table.container.getBoundingClientRect()
+      let tr_dow
+      let l_tr_lesson
+      if (nodeTable.tHead) {
+        tr_dow = nodeTable.tHead.firstElementChild
+        l_tr_lesson = nodeTable.tBodies[0].children
+      } else {
+        l_tr_lesson = Array.from(nodeTable.getElementsByTagName('tr'))
+        tr_dow = l_tr_lesson.shift()
+      }
+      for (let i = 0, k = lesson.schedule.length; i < k; i++) {
+        let [week_skip, week_start, week_end,
+          dow, lesson_start, lesson_end] = lesson.schedule[i]
+        let tr_start = l_tr_lesson[lesson_start]
+        let cr_tr_start = tr_start.getBoundingClientRect()
+
+        let tr_end = l_tr_lesson[lesson_end - 1]
+        let cr_tr_end = tr_end.getBoundingClientRect()
+        let style_tr_end = window.getComputedStyle(tr_end)
+
+        let td_dow = tr_dow.children[dow]
+        let cr_td_dow = td_dow.getBoundingClientRect()
+        let style_td_dow = window.getComputedStyle(td_dow)
+
         let div_preview = document.createElement('div')
         div_preview.classList.add('preview')
-        div_preview.style.top =
-          $tr_start.offset().top - $tr_start.offsetParent().offset().top +
-          parseInt($td_dow.css('border-top-width')) + 'px'
         div_preview.style.left =
-          $td_dow.offset().left - $tr_start.offsetParent().offset().left +
-          parseInt($td_dow.css('border-left-width')) + 'px'
-        div_preview.style.width = $td_dow.innerWidth() +
-          parseInt($td_dow.css('border-left-width')) + 'px'
+          cr_td_dow.left - cr_container.left +
+          parseInt(style_td_dow.getPropertyValue('border-left-width')) + 'px'
+        div_preview.style.top =
+          cr_tr_start.top - cr_container.top +
+          parseInt(style_td_dow.getPropertyValue('border-top-width')) + 'px'
+        div_preview.style.width =
+          parseInt(style_td_dow.getPropertyValue('width')) -
+          parseInt(style_td_dow.getPropertyValue('border-top-width')) + 'px'
         div_preview.style.height =
-          $tr_end.offset().top - $tr_start.offset().top + $tr_end.innerHeight() -
-          parseInt($td_dow.css('border-top-width')) + 'px'
+          cr_tr_end.top - cr_tr_start.top +
+          parseInt(style_tr_end.getPropertyValue('height')) -
+          parseInt(style_td_dow.getPropertyValue('border-top-width')) + 'px'
         scheduleTable.table.container.appendChild(div_preview)
       }
     },
