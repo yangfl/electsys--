@@ -19,25 +19,31 @@ mode.debug = {
     loggerInit('init.debug', 'Preparing for Debug mode', 'log')
     document.getElementById('confirm-debug')
       .addEventListener('click', () => mode.debug.setup())
-    document.getElementById('clear-cache').addEventListener('click', () => {
+    document.getElementById('clear-db').addEventListener('click', () => {
       db_lesson.close()
       db_tab.close()
       indexedDB.webkitGetDatabaseNames().onsuccess = (sender, args) => {
         let r = sender.target.result
         let i = r.length
         if (i === 0) {
-          loggerInit('debug.clear_cache', 'nothing to remove')
+          loggerInit('debug.clear', 'nothing to remove')
           return
         }
         while (i--) {
           let name = r[i]
           let request = indexedDB.deleteDatabase(name)
           request.onsuccess = () => loggerInit(
-            'debug.clear_cache', '\'' + name + '\' removed')
+            'debug.clear', '\'' + name + '\' removed')
           request.onerror = () => loggerInit(
-            'debug.clear_cache', '\'' + name + '\' can\'t be removed', 'warn')
+            'debug.clear', '\'' + name + '\' can\'t be removed', 'warn')
         }
       }
+    })
+    document.getElementById('clear-tab').addEventListener('click', () => {
+      db_tab.close()
+      let name = db_tab.name
+      indexedDB.deleteDatabase(name).onsuccess = () => loggerInit(
+        'debug.clear', '\'' + name + '\' removed')
     })
     deferredPool.start.resolve()
   },

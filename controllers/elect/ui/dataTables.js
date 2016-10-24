@@ -205,7 +205,7 @@ let dataTable_arrange
     tbody_arrange.addEventListener('mouseover', event => {
       let entryData = dataTable_arrange.row(event.target.closest('tr')).data()
       if (entryData) {
-        // TODO
+        scheduleTable.preview.draw(entryData)
       }
     })
 
@@ -232,7 +232,7 @@ let dataTable_arrange
 
 /**
  * @async
- * @param {(boolen|Event)} [reload=false]
+ * @param {boolen} [reload=false]
  */
 function refreshAvailable (reload) {
   dataTable_available.clear()
@@ -243,12 +243,12 @@ function refreshAvailable (reload) {
     return Promise.resolve()
   }
 
-  if (reload) {
+  if (reload === true) {
     // draw an empty table to indicate reloading
     dataTable_available.draw()
   }
 
-  return Promise.all(l_selected_type.map(reload ?
+  return Promise.all(l_selected_type.map(reload === true ?
     typeDesc => rootTab.type(typeDesc).then(tab => tab.load(true)) :
     typeDesc => rootTab.type(typeDesc))
   ).then(l_tab => {
@@ -321,4 +321,4 @@ function refreshAvailable (reload) {
 }
 
 deferredPool.finished.then(() =>
-  window.addEventListener('login', refreshAvailable))
+  window.addEventListener('login', refreshAvailable.bind(undefined, true)))

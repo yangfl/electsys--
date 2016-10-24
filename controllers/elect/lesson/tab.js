@@ -39,18 +39,20 @@ let rootTab
             }
             matched = true
             let token = cursor.value.to
-            if (!isNaN(token)) {
-              q.push(Lesson.fromBsid(Number(token)))
-            } else if (isEntry(token)) {
-              if (this.entries === undefined) {
-                this.entries = {}
+            if (token) {
+              if (!isNaN(token)) {
+                q.push(Lesson.fromBsid(Number(token)))
+              } else if (isEntry(token)) {
+                if (this.entries === undefined) {
+                  this.entries = {}
+                }
+                this.entries[token] = undefined
+              } else {
+                if (this.types === undefined) {
+                  this.types = {}
+                }
+                this.types[token] = cursor.value.value
               }
-              this.entries[token] = undefined
-            } else {
-              if (this.types === undefined) {
-                this.types = {}
-              }
-              this.types[token] = cursor.value.value
             }
             return cursor.continue()
           }
@@ -147,11 +149,17 @@ let rootTab
           event.stopPropagation()
         }
       }
+      let stored = false
       for (let ref in this.entries) {
         store.add({from: typeDescPath, to: ref}).onerror = onStoreError
+        stored = true
       }
       for (let typeDesc in this.types) {
         store.add({from: typeDescPath, to: typeDesc}).onerror = onStoreError
+        stored = true
+      }
+      if (!stored) {
+        store.add({from: typeDescPath, to: ''}).onerror = onStoreError
       }
     }
 
@@ -202,12 +210,17 @@ let rootTab
       .then(() => window.dispatchEvent(new Event('login')))
     }
 
-    isEmpty () {
+    async isEmpty () {
+      if (this.status === 'mismatched') {
+        return false
+      }
       for (let k in this.types) {
         return false
       }
       for (let k in this.entries) {
-        return false
+        if (!(await (await this.type(k, true)).isEmpty())) {
+          return false
+        }
       }
       return true
     }
@@ -388,7 +401,7 @@ let rootTab
 
     guessEntry () {
       if (this.status !== 'mismatched') {
-        return this.entries
+        return Promise.resolve(this.entries)
       }
       return new Promise(resolve => {
         let entries = {}
@@ -403,6 +416,16 @@ let rootTab
             return cursor.continue()
           }
       })
+    }
+
+    async isEmpty () {
+      if (this.status === 'mismatched') {
+        return false
+      }
+      for (let k in this.entries) {
+        return false
+      }
+      return true
     }
   }
 

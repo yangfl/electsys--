@@ -45,7 +45,7 @@ user.login.wait = async function waitLogin (loginWindow) {
     return true
   }
   while (true) {
-    await sleep(1000)
+    await new Promise(resolve => setTimeout(resolve, 1000))
     if (loginWindow.closed) {
       if (await user.isLogin()) {
         window.dispatchEvent(new Event('login'))

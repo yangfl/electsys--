@@ -41,7 +41,7 @@
   word-wrap: normal;
 
   /* .tooltip-inner @ bootstrap */
-  max-width: 200px;
+  /* max-width: 200px; */
   padding: 3px 8px;
   color: #fff;
   text-align: center;

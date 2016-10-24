@@ -36,7 +36,7 @@ function selectedType () {
       selectors.push('#select-limited tr.row-selected')
     }
     if (document.getElementById('btn-out').classList.contains('btn-info')) {
-      selectors.push('#select-out li')
+      selectors.push('#select-out li:not(.disabled)')
     }
     // [].toString happens to generate valid css selector
     return Array.prototype.map.call(
@@ -222,27 +222,54 @@ function selectedType () {
 
 
   /* out */
-  let list_selected = document.getElementById('list-out-selected')
-  list_selected.addEventListener('click', event => {
+  let ul_selected = document.getElementById('list-out-selected')
+  ul_selected.addEventListener('click', event => {
     if (event.target.nodeName === 'SPAN') {
       event.target.closest('li').remove()
     }
   })
-  list_selected.addEventListener('contextmenu', contextmenuType)
+  ul_selected.addEventListener('contextmenu', contextmenuType)
 
-  function* iterSelect (select, selectAny) {
-    for (let option of
-        selectAny ? select.options : [select.options[select.selectedIndex]]) {
-      yield [option.value, option.innerText]
+  function detectOutTab (li_type) {
+    if (li_type.classList.contains('checked')) {
+      return
     }
+    return rootTab.type(nodeTypeDesc(li_type), true).then(tab => {
+      if (tab.status === 'loaded') {
+        li_type.classList.add('checked')
+      }
+      return tab.isEmpty()
+    }).then(
+      is_empty => {
+        if (is_empty) {
+          li_type.classList.add('disabled')
+        } else {
+          li_type.classList.remove('disabled')
+        }
+      }
+    )
+  }
+  $(modal_out).on('show.bs.modal',
+    () => Array.prototype.forEach.call(ul_selected.children, detectOutTab))
+
+  function getOptionInfo (option) {
+    return [option.value, option.innerText]
   }
   function* getOutOnselect (...any_options) {
     let [options_school, options_year] = Array.prototype.map.call(
       document.querySelectorAll('#select-out select'),
-      (select, i) => Array.from(iterSelect(select, any_options[i])))
-    for (let option_year of options_year) {
-      for (let option_school of options_school) {
-        yield [option_school, option_year]
+      (select, i) => {
+        if (any_options[i]) {
+          return Array.prototype.map.call(select.options, getOptionInfo)
+        } else {
+          return [getOptionInfo(select.options[select.selectedIndex])]
+        }
+      })
+    let l = options_school.length
+    for (let i = 0, k = options_year.length; i < k; i++) {
+      let option_year = options_year[i]
+      for (let j = 0; j < l; j++) {
+        yield [options_school[j], option_year]
       }
     }
   }
@@ -251,6 +278,7 @@ function selectedType () {
       let name = option[0][1] + '@' + option[1][1]
       let id = option[0][0] + '-' + option[1][0]
       if (document.querySelector('[data-minor-type="' + id + '"]')) {
+        // already has entry
         return
       }
       let li = document.createElement('li')
@@ -258,7 +286,8 @@ function selectedType () {
       li.setAttribute('data-minor-type', id)
       li.innerHTML = name +
         '<span class="pull-right entry-remove glyphicon glyphicon-remove"></span>'
-      list_selected.appendChild(li)
+      ul_selected.appendChild(li)
+      detectOutTab(li)
     }
   }
   document.getElementById('btn-select-out-add').addEventListener('click',
@@ -267,8 +296,8 @@ function selectedType () {
     () => addOutSelected(getOutOnselect(true)))
   document.getElementById('btn-select-out-remove-all').addEventListener('click',
     () => {
-      while (list_selected.lastChild) {
-        list_selected.removeChild(list_selected.lastChild)
+      while (ul_selected.lastChild) {
+        ul_selected.removeChild(ul_selected.lastChild)
       }
     })
 }

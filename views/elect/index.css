@@ -153,28 +153,28 @@ td:first-child > span {
 #table-arrange .th-note {
   width: 20%; }
 
-#table-arrange td:first-child {
+#table-arrange td:nth-child(2) {
   cursor: auto; }
 
-#table-arrange td:first-child span {
+#table-arrange td:nth-child(2) span {
   font-size: x-small;
   white-space: nowrap; }
 
-#table-arrange td:nth-child(4) {
+#table-arrange td:nth-child(5) {
   white-space: nowrap; }
 
-#table-arrange td:nth-child(4) > p {
+#table-arrange td:nth-child(5) > p {
   margin: auto;
   display: flex; }
 
-#table-arrange td:nth-child(4) .glyphicon {
+#table-arrange td:nth-child(5) .glyphicon {
   color: #337ab7; }
 
-#table-arrange td:nth-child(4) .glyphicon-chevron-up, .td-pending,
-#table-arrange td:nth-child(4) .glyphicon-chevron-down {
+#table-arrange td:nth-child(5) .glyphicon-chevron-up, .td-pending,
+#table-arrange td:nth-child(5) .glyphicon-chevron-down {
   float: right; }
 
-#table-arrange td:nth-child(4) .glyphicon-dashed-arrow-right {
+#table-arrange td:nth-child(5) .glyphicon-dashed-arrow-right {
   bottom: -2px;
   font-size: 165%; }
 
@@ -198,11 +198,11 @@ td:first-child > span {
 .glyphicon-dashed-arrow-left:before {
   content: "\21E0"; }
 
-#table-arrange td:nth-child(5) {
+#table-arrange td:nth-child(6) {
   font-family: "??";
   font-size: x-small;
   text-align: initial;
   white-space: nowrap; }
 
-#table-arrange td:nth-child(6) {
+#table-arrange td:nth-child(7) {
   font-size: small; }
